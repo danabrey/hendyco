@@ -8,7 +8,7 @@
     ];
 @endphp
 
-<header class="bg-brand-cream">
+<header class="relative z-50 bg-brand-cream">
     <div class="border-b border-brand-navy/10 bg-brand-navy px-4 py-2 text-center text-sm text-brand-cream sm:px-8">
         <a href="tel:07895805449" class="hover:underline">07895 805449</a>
         <span class="mx-2 text-brand-cream/40">&middot;</span>
