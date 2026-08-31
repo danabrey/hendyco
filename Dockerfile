@@ -21,9 +21,8 @@ RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
 # ---- Runtime image ----
 FROM php:8.4-fpm-alpine
 
-RUN apk add --no-cache nginx supervisor libpng-dev libzip-dev oniguruma-dev \
-    && docker-php-ext-install pdo_mysql mbstring zip bcmath opcache \
-    && apk del libpng-dev libzip-dev oniguruma-dev
+RUN apk add --no-cache nginx supervisor oniguruma-dev \
+    && docker-php-ext-install pdo_mysql mbstring bcmath opcache
 
 WORKDIR /app
 

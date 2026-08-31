@@ -90,7 +90,7 @@
                 <p class="text-sm font-semibold tracking-widest text-brand-rose uppercase">About</p>
                 <h2 class="mt-2 font-script text-4xl text-brand-navy">I'm here for you</h2>
                 <p class="mt-4 text-brand-navy/80">
-                    I give your pets kind, patient and reliable care while you're away &mdash; whether that's a quick
+                    I give your pets kind, patient and reliable care while you're away - whether that's a quick
                     pop-in or a longer adventure walk. Every visit is tailored to your pet's personality, with photo
                     updates so you know they're safe and happy.
                 </p>

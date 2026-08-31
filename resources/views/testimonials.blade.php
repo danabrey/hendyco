@@ -3,7 +3,7 @@
         <div class="mx-auto max-w-3xl px-4 sm:px-8">
             <p class="text-sm font-semibold tracking-widest text-brand-cream/70 uppercase">Testimonials</p>
             <h1 class="mt-2 font-script text-5xl">What pet parents say</h1>
-            <p class="mt-3 text-brand-cream/80">Real feedback from Hendy &amp; Co clients &mdash; coming soon.</p>
+            <p class="mt-3 text-brand-cream/80">Real feedback from Hendy &amp; Co clients - coming soon.</p>
         </div>
     </section>
 
@@ -25,7 +25,7 @@
             </div>
 
             <p class="mt-8 text-center text-sm text-brand-navy/60">
-                Placeholder cards &mdash; send me your reviews and I'll pop them straight in here.
+                Placeholder cards - send me your reviews and I'll pop them straight in here.
             </p>
         </div>
     </section>

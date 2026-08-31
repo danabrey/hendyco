@@ -61,7 +61,7 @@
         <div class="mx-auto max-w-3xl px-4 sm:px-8">
             <p class="text-sm font-semibold tracking-widest text-brand-cream/70 uppercase">Services &amp; Pricing</p>
             <h1 class="mt-2 font-script text-5xl">Simple, fair pricing</h1>
-            <p class="mt-3 text-brand-cream/80">No hidden fees &mdash; just kind, reliable care for your pet.</p>
+            <p class="mt-3 text-brand-cream/80">No hidden fees - just kind, reliable care for your pet.</p>
         </div>
     </section>
 
@@ -79,7 +79,7 @@
 
             <div class="mt-8 flex flex-col items-center gap-1 text-center text-brand-navy/70">
                 <p>Extra dogs from the same household: <span class="font-semibold text-brand-navy">+£3</span></p>
-                <p>Puppy visits available &mdash; pricing on request.</p>
+                <p>Puppy visits available - pricing on request.</p>
             </div>
         </div>
     </section>
