@@ -30,8 +30,6 @@
             </span>
         </a>
 
-        <input type="checkbox" id="nav-toggle" class="peer hidden">
-
         <nav class="hidden items-center gap-8 text-sm font-medium text-brand-navy md:flex">
             @foreach ($links as $key => $link)
                 <a
@@ -49,13 +47,20 @@
             </a>
         </nav>
 
-        <label for="nav-toggle" class="cursor-pointer text-brand-navy md:hidden" aria-label="Toggle menu">
+        <button
+            type="button"
+            data-nav-toggle
+            aria-controls="mobile-nav"
+            aria-expanded="false"
+            aria-label="Toggle menu"
+            class="cursor-pointer text-brand-navy md:hidden"
+        >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-        </label>
+        </button>
 
-        <nav class="absolute inset-x-0 top-full hidden flex-col gap-1 border-t border-brand-navy/10 bg-brand-cream px-4 py-4 text-brand-navy peer-checked:flex md:hidden">
+        <nav id="mobile-nav" class="absolute inset-x-0 top-full hidden flex-col gap-1 border-t border-brand-navy/10 bg-brand-cream px-4 py-4 text-brand-navy md:hidden">
             @foreach ($links as $key => $link)
                 <a
                     href="{{ route($link['route']) }}"
