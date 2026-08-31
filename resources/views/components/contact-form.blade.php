@@ -6,7 +6,7 @@
             <p class="text-sm font-semibold tracking-widest text-brand-rose uppercase">Get in touch</p>
             <h2 class="mt-2 font-script text-4xl text-brand-navy">Let's meet your pet</h2>
             <p class="mt-3 text-brand-navy/70">
-                Free meet &amp; greet included - tell me a bit about you and your pet and I'll get back to you soon.
+                Free meet &amp; greet included - tell us a bit about you and your pet and we'll get back to you soon.
             </p>
         </div>
 

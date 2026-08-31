@@ -88,16 +88,16 @@
         <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-8 md:grid-cols-2">
             <div>
                 <p class="text-sm font-semibold tracking-widest text-brand-rose uppercase">About</p>
-                <h2 class="mt-2 font-script text-4xl text-brand-navy">I'm here for you</h2>
+                <h2 class="mt-2 font-script text-4xl text-brand-navy">We're here for you</h2>
                 <p class="mt-4 text-brand-navy/80">
-                    I give your pets kind, patient and reliable care while you're away - whether that's a quick
-                    pop-in or a longer adventure walk. Every visit is tailored to your pet's personality, with photo
-                    updates so you know they're safe and happy.
+                    Hendy &amp; Co gives your pets kind, patient and reliable care while you're away - whether
+                    that's a quick pop-in or a longer adventure walk. Every visit is tailored to your pet's
+                    personality, with photo updates so you know they're safe and happy.
                 </p>
                 <div class="mt-6 flex items-start gap-3 rounded-xl bg-brand-rose/10 p-4">
                     <x-icon name="heart" class="mt-0.5 h-5 w-5 shrink-0 text-brand-rose" />
                     <p class="text-sm text-brand-navy/80">
-                        I'm experienced with nervous &amp; reactive dogs and nervous or anxious cats.
+                        We're experienced with nervous &amp; reactive dogs and nervous or anxious cats.
                         <span class="font-medium text-brand-navy">All dogs welcome.</span>
                     </p>
                 </div>
@@ -127,7 +127,7 @@
         <div class="mx-auto max-w-6xl px-4 py-20 sm:px-8">
             <div class="text-center">
                 <p class="text-sm font-semibold tracking-widest text-brand-rose uppercase">Services</p>
-                <h2 class="mt-2 font-script text-4xl text-brand-navy">How can I help?</h2>
+                <h2 class="mt-2 font-script text-4xl text-brand-navy">How can we help?</h2>
             </div>
 
             <div class="mt-12 grid gap-8 md:grid-cols-3">

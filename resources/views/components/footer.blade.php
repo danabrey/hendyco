@@ -10,7 +10,7 @@
                 <span class="font-brush text-4xl leading-none">Hendy &amp; Co.</span>
             </span>
             <p class="mt-3 max-w-xs text-sm text-brand-cream/70">
-                Kind, patient and reliable pet pop-in visits and dog walks - treating your pets like they're my own.
+                Kind, patient and reliable pet pop-in visits and dog walks - treating your pets like they're our own.
             </p>
         </div>
 

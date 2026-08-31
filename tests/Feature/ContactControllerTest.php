@@ -21,7 +21,7 @@ class ContactControllerTest extends TestCase
         ]);
 
         $response->assertCreated();
-        $response->assertJson(['message' => "Thanks! I'll be in touch soon."]);
+        $response->assertJson(['message' => "Thanks! We'll be in touch soon."]);
 
         $this->assertDatabaseHas('enquiries', [
             'name' => 'Jane Test',

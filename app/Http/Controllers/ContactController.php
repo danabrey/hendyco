@@ -13,7 +13,7 @@ class ContactController extends Controller
         Enquiry::create($request->validated());
 
         return response()->json([
-            'message' => "Thanks! I'll be in touch soon.",
+            'message' => "Thanks! We'll be in touch soon.",
         ], 201);
     }
 }

@@ -25,7 +25,7 @@
             </div>
 
             <p class="mt-8 text-center text-sm text-brand-navy/60">
-                Placeholder cards - send me your reviews and I'll pop them straight in here.
+                Placeholder cards - send over your reviews and we'll pop them straight in here.
             </p>
         </div>
     </section>

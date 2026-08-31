@@ -101,7 +101,7 @@ async function submit() {
         </div>
 
         <div>
-            <label for="message" class="block text-sm font-medium text-brand-navy">Tell me about your pet</label>
+            <label for="message" class="block text-sm font-medium text-brand-navy">Tell us about your pet</label>
             <textarea
                 id="message"
                 v-model="form.message"
