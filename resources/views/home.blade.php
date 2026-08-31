@@ -40,8 +40,8 @@
             class="absolute inset-0 h-full w-full object-cover opacity-30"
         />
 
-        <div class="relative mx-auto max-w-4xl px-4 py-24 text-center sm:px-8 sm:py-32">
-            <div class="mx-auto mb-4 flex h-36 w-36 items-center justify-center rounded-full bg-brand-cream p-3 shadow-lg sm:h-44 sm:w-44">
+        <div class="relative mx-auto max-w-4xl px-4 pt-12 pb-24 text-center sm:px-8 sm:pt-16 sm:pb-32">
+            <div class="mx-auto mb-8 flex h-54 w-54 items-center justify-center rounded-full bg-brand-cream p-3 shadow-lg sm:h-66 sm:w-66">
                 <img
                     src="{{ asset('images/logo.png') }}"
                     alt="Hendy & Co"
