@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Mail\NewEnquiryReceived;
 use App\Models\Enquiry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class ContactControllerTest extends TestCase
@@ -30,6 +32,36 @@ class ContactControllerTest extends TestCase
             'message' => 'Looking for a 30-minute walk twice a week.',
             'source_page' => 'home',
         ]);
+    }
+
+    public function test_valid_payload_emails_the_business_inbox(): void
+    {
+        Mail::fake();
+
+        $this->postJson('/contact', [
+            'name' => 'Jane Test',
+            'email' => 'jane@example.com',
+            'message' => 'Looking for a 30-minute walk twice a week.',
+        ]);
+
+        Mail::assertSent(NewEnquiryReceived::class, function (NewEnquiryReceived $mail) {
+            return $mail->hasTo(config('mail.from.address'))
+                && $mail->enquiry->email === 'jane@example.com';
+        });
+    }
+
+    public function test_mail_failure_does_not_prevent_enquiry_from_being_saved(): void
+    {
+        Mail::shouldReceive('to->send')->andThrow(new \RuntimeException('SMTP unavailable'));
+
+        $response = $this->postJson('/contact', [
+            'name' => 'Jane Test',
+            'email' => 'jane@example.com',
+            'message' => 'Looking for a 30-minute walk twice a week.',
+        ]);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('enquiries', ['email' => 'jane@example.com']);
     }
 
     public function test_empty_payload_returns_422_with_required_field_errors(): void
