@@ -19,7 +19,7 @@ COPY . .
 RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
 
 # ---- Runtime image ----
-FROM php:8.4-fpm-alpine
+FROM php:8.4.27-fpm-alpine
 
 RUN apk add --no-cache nginx supervisor oniguruma-dev \
     && docker-php-ext-install pdo_mysql mbstring bcmath opcache
