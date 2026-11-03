@@ -34,7 +34,7 @@ class DashboardWidgetsTest extends TestCase
             ->create(['price_pence' => $pence, 'paid_at' => $paidAt, 'payment_method' => $paidAt ? PaymentMethod::Cash : null]);
     }
 
-    public function test_stats_summarise_the_month_what_is_owed_and_uc_mileage(): void
+    public function test_stats_summarise_the_month_what_is_owed_and_the_uc_period_net(): void
     {
         $this->row(2000, '2026-11-02');
         $this->row(1500, '2026-10-05');
@@ -42,6 +42,7 @@ class DashboardWidgetsTest extends TestCase
         Expense::factory()->create(['date' => '2026-11-03', 'amount_pence' => 500]);
         Expense::factory()->create(['date' => '2026-10-03', 'amount_pence' => 9999]);
         MileageLog::factory()->create(['date' => '2026-11-01', 'miles' => 100]);
+        Expense::factory()->create(['date' => '2026-10-20', 'amount_pence' => 300]);
 
         Livewire::test(BusinessStatsWidget::class)
             ->assertSee('£20.00')
@@ -50,9 +51,10 @@ class DashboardWidgetsTest extends TestCase
             ->assertSee('1 unpaid booking')
             ->assertSee('£5.00')
             ->assertSee('Net this month: £15.00')
-            ->assertSee('100 miles')
-            ->assertSee('733 left at 45p')
-            ->assertSee('period ends 15 Nov')
+            ->assertSee('Net income this UC period')
+            ->assertSee('-£33.00')
+            ->assertSee('Income £20.00 − costs £53.00')
+            ->assertSee('ends 15 Nov')
             ->assertDontSee('£99.99');
     }
 

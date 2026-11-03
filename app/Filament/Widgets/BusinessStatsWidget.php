@@ -5,8 +5,8 @@ namespace App\Filament\Widgets;
 use App\Models\BookingClient;
 use App\Models\Expense;
 use App\Reports\IncomeCalculator;
-use App\Reports\MileageCostCalculator;
 use App\Reports\UcAssessmentPeriod;
+use App\Reports\UcReportBuilder;
 use Carbon\CarbonImmutable;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -36,8 +36,7 @@ class BusinessStatsWidget extends StatsOverviewWidget
         $owedPence = $unpaid->sum(fn (BookingClient $row): int => $row->outstandingPence());
 
         [$periodStart, $periodEnd] = UcAssessmentPeriod::containing($today);
-        $periodMiles = MileageCostCalculator::uc()->entries($periodStart, $today)->sum('miles');
-        $thresholdMiles = (int) config('hendyco.mileage.uc.threshold_miles');
+        $period = (new UcReportBuilder)->build($periodStart, $today);
 
         return [
             Stat::make('Income this month', $this->money($incomeThisMonth))
@@ -48,8 +47,9 @@ class BusinessStatsWidget extends StatsOverviewWidget
                 ->color($owedPence > 0 ? 'warning' : 'success'),
             Stat::make('Expenses this month', $this->money($expensesThisMonth))
                 ->description('Net this month: '.$this->money($incomeThisMonth - $expensesThisMonth)),
-            Stat::make('UC period mileage', rtrim(rtrim(number_format($periodMiles, 1), '0'), '.').' miles')
-                ->description($this->mileageDescription($periodMiles, $thresholdMiles, $periodEnd)),
+            Stat::make('Net income this UC period', $this->money($period['net_pence']))
+                ->description('Income '.$this->money($period['income_pence']).' − costs '.$this->money($period['expenditure_pence']).' · ends '.$periodEnd->format('j M'))
+                ->color($period['net_pence'] >= 0 ? 'success' : 'danger'),
         ];
     }
 
@@ -61,16 +61,8 @@ class BusinessStatsWidget extends StatsOverviewWidget
             + $calculator->giftCardSales($from, $until)->sum('amount_pence');
     }
 
-    protected function mileageDescription(float $miles, int $threshold, CarbonImmutable $periodEnd): string
-    {
-        $left = max(0, $threshold - $miles);
-        $rate = (int) config('hendyco.mileage.uc.rate_pence');
-
-        return rtrim(rtrim(number_format($left, 1), '0'), '.')." left at {$rate}p · period ends ".$periodEnd->format('j M');
-    }
-
     protected function money(int $pence): string
     {
-        return '£'.number_format($pence / 100, 2);
+        return ($pence < 0 ? '-' : '').'£'.number_format(abs($pence) / 100, 2);
     }
 }
