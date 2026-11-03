@@ -43,6 +43,14 @@ class Client extends Model
         return $this->hasMany(Dog::class);
     }
 
+    /**
+     * @return HasMany<BookingClient, $this>
+     */
+    public function bookingRows(): HasMany
+    {
+        return $this->hasMany(BookingClient::class);
+    }
+
     public function isArchived(): bool
     {
         return $this->archived_at !== null;

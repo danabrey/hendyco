@@ -6,6 +6,7 @@ use App\Filament\Resources\Clients\Pages\CreateClient;
 use App\Filament\Resources\Clients\Pages\EditClient;
 use App\Filament\Resources\Clients\Pages\ListClients;
 use App\Filament\Resources\Clients\Pages\ViewClient;
+use App\Filament\Resources\Clients\RelationManagers\BookingRowsRelationManager;
 use App\Filament\Resources\Clients\RelationManagers\DogsRelationManager;
 use App\Filament\Resources\Clients\Schemas\ClientForm;
 use App\Filament\Resources\Clients\Schemas\ClientInfolist;
@@ -46,6 +47,7 @@ class ClientResource extends Resource
     {
         return [
             DogsRelationManager::class,
+            BookingRowsRelationManager::class,
         ];
     }
 
