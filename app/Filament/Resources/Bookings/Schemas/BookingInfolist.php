@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Bookings\Schemas;
 
+use App\Models\BookingClient;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
@@ -43,7 +44,7 @@ class BookingInfolist
                         TextEntry::make('paid_at')
                             ->label('Paid on')
                             ->date()
-                            ->placeholder('Unpaid'),
+                            ->placeholder(fn (BookingClient $record): string => $record->isCoveredByGiftCard() ? 'Paid by gift card' : 'Unpaid'),
                         TextEntry::make('payment_method')
                             ->placeholder('-'),
                     ]),

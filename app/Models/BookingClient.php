@@ -53,6 +53,11 @@ class BookingClient extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function isCoveredByGiftCard(): bool
+    {
+        return $this->payment_method === PaymentMethod::GiftCard;
+    }
+
     /**
      * @param  Builder<BookingClient>  $query
      */

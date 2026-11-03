@@ -171,6 +171,26 @@ class BookingResourceTest extends TestCase
             ->assertSee('Unpaid');
     }
 
+    public function test_view_page_shows_gift_card_rows_as_paid(): void
+    {
+        $booking = Booking::factory()->create();
+        BookingClient::factory()->for($booking)->state(['payment_method' => PaymentMethod::GiftCard])->create();
+
+        Livewire::test(ViewBooking::class, ['record' => $booking->getKey()])
+            ->assertSee('Paid by gift card')
+            ->assertDontSee('Unpaid');
+    }
+
+    public function test_choosing_a_payment_method_defaults_paid_on_to_today(): void
+    {
+        $booking = Booking::factory()->create();
+        $row = BookingClient::factory()->for($booking)->create();
+
+        Livewire::test(EditBooking::class, ['record' => $booking->getKey()])
+            ->set("data.clientRows.record-{$row->id}.payment_method", 'gift_card')
+            ->assertSet("data.clientRows.record-{$row->id}.paid_at", today()->toDateString());
+    }
+
     public function test_deleting_a_booking_soft_deletes_it(): void
     {
         $booking = Booking::factory()->create();

@@ -78,7 +78,13 @@ class BookingForm
                         DatePicker::make('paid_at')
                             ->label('Paid on'),
                         Select::make('payment_method')
-                            ->options(PaymentMethod::class),
+                            ->options(PaymentMethod::class)
+                            ->live()
+                            ->afterStateUpdated(function (PaymentMethod|string|null $state, Get $get, Set $set): void {
+                                if ($state !== null && blank($get('paid_at'))) {
+                                    $set('paid_at', today()->toDateString());
+                                }
+                            }),
                     ]),
             ]);
     }

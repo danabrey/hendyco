@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Clients\RelationManagers;
 
+use App\Models\BookingClient;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -32,7 +33,7 @@ class BookingRowsRelationManager extends RelationManager
                 TextColumn::make('paid_at')
                     ->label('Paid on')
                     ->date()
-                    ->placeholder('Unpaid'),
+                    ->placeholder(fn (BookingClient $record): string => $record->isCoveredByGiftCard() ? 'Paid by gift card' : 'Unpaid'),
                 TextColumn::make('payment_method'),
             ])
             ->modifyQueryUsing(fn ($query) => $query->whereHas('booking'))
