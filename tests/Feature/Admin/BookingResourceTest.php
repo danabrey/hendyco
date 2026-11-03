@@ -151,6 +151,11 @@ class BookingResourceTest extends TestCase
             ->assertSeeHtml('href="'.ClientResource::getUrl('view', ['record' => $row->client]).'"');
     }
 
+    public function test_booking_form_labels_the_miles_field_mileage(): void
+    {
+        Livewire::test(CreateBooking::class)->assertSee('Mileage');
+    }
+
     public function test_create_page_ignores_a_malformed_date_in_the_query_string(): void
     {
         Livewire::withQueryParams(['date' => 'not-a-date'])

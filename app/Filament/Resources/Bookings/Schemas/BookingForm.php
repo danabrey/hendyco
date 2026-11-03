@@ -57,6 +57,7 @@ class BookingForm
                     ->searchable()
                     ->columnSpanFull(),
                 TextInput::make('miles')
+                    ->label('Mileage')
                     ->numeric()
                     ->minValue(0)
                     ->step(0.01),

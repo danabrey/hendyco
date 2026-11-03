@@ -12,7 +12,7 @@ enum GiftCardType: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Money => 'Money',
+            self::Money => 'Cash balance',
             self::Service => 'Services',
         };
     }

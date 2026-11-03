@@ -96,7 +96,8 @@ class GiftCardResourceTest extends TestCase
 
         Livewire::test(ListGiftCards::class)
             ->assertCanSeeTableRecords([$card])
-            ->assertSee('£35.00 of £50.00');
+            ->assertSee('£35.00 of £50.00')
+            ->assertSee('Cash balance');
     }
 
     public function test_list_shows_status_and_can_filter_used_cards(): void

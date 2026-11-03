@@ -29,6 +29,7 @@ class BookingInfolist
                         TextEntry::make('dogs.name')
                             ->badge(),
                         TextEntry::make('miles')
+                            ->label('Mileage')
                             ->placeholder('-'),
                         TextEntry::make('notes')
                             ->placeholder('-')
