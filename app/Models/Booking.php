@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\GiftCards\GiftCardRedeemer;
+use App\Mileage\BookingMileageSync;
 use Database\Factories\BookingFactory;
 use Guava\Calendar\Contracts\Eventable;
 use Guava\Calendar\ValueObjects\CalendarEvent;
@@ -32,15 +33,22 @@ class Booking extends Model implements Eventable
 
     protected static function booted(): void
     {
+        static::forceDeleting(function (Booking $booking): void {
+            app(BookingMileageSync::class)->forget($booking);
+        });
         static::deleted(function (Booking $booking): void {
             if (! $booking->isForceDeleting()) {
                 app(GiftCardRedeemer::class)->release($booking->id);
+                app(BookingMileageSync::class)->sync($booking);
             }
         });
         static::restored(function (Booking $booking): void {
             app(GiftCardRedeemer::class)->syncBooking($booking->id);
+            app(BookingMileageSync::class)->sync($booking);
         });
         static::saved(function (Booking $booking): void {
+            app(BookingMileageSync::class)->sync($booking);
+
             if ($booking->wasChanged('service_id')) {
                 app(GiftCardRedeemer::class)->syncBooking($booking->id);
             }
