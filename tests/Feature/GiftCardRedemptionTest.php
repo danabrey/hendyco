@@ -192,4 +192,42 @@ class GiftCardRedemptionTest extends TestCase
         $this->assertNull($row->fresh()->payment_method);
         $this->assertTrue(BookingClient::unpaid()->whereKey($row->id)->exists());
     }
+
+    public function test_status_and_scopes_tell_used_available_and_expired_cards_apart(): void
+    {
+        $service = Service::factory()->create();
+        $serviceCard = function (int $quantity, int $uses) use ($service): GiftCard {
+            $card = GiftCard::factory()->service()->create();
+            $card->lines()->delete();
+            GiftCardLine::factory()->for($card)->create(['service_id' => $service->id, 'quantity' => $quantity]);
+            foreach (range(1, $uses) as $ignored) {
+                if ($uses > 0) {
+                    $this->rowFor(Booking::factory()->create(['service_id' => $service->id]), $card);
+                }
+            }
+
+            return $card;
+        };
+
+        $moneyUsed = GiftCard::factory()->create(['value_pence' => 1500]);
+        $this->rowFor(Booking::factory()->create(), $moneyUsed, 1500);
+        $moneyPartly = GiftCard::factory()->create(['value_pence' => 5000]);
+        $this->rowFor(Booking::factory()->create(), $moneyPartly, 1500);
+        $moneyUntouched = GiftCard::factory()->create();
+        $serviceUsed = $serviceCard(1, 1);
+        $servicePartly = $serviceCard(2, 1);
+        $expiredUnused = GiftCard::factory()->create(['expires_at' => today()->subDay()]);
+        $expiredButUsed = GiftCard::factory()->create(['value_pence' => 1500, 'expires_at' => today()->addDay()]);
+        $this->rowFor(Booking::factory()->create(), $expiredButUsed, 1500);
+        $expiredButUsed->update(['expires_at' => today()->subDay()]);
+
+        $this->assertSame([true, false, false, true, false, false, true], array_map(fn (GiftCard $card) => $card->isUsed(), [$moneyUsed, $moneyPartly, $moneyUntouched, $serviceUsed, $servicePartly, $expiredUnused, $expiredButUsed]));
+
+        $ids = fn ($query) => $query->pluck('id')->sort()->values()->all();
+        $this->assertSame($ids(collect([$moneyUsed, $serviceUsed, $expiredButUsed])), $ids(GiftCard::used()));
+        $this->assertSame($ids(collect([$moneyPartly, $moneyUntouched, $servicePartly])), $ids(GiftCard::available()));
+        $this->assertSame($ids(collect([$expiredUnused])), $ids(GiftCard::expired()));
+        $this->assertSame('Expired', $expiredUnused->status()->getLabel());
+        $this->assertSame('Used', $expiredButUsed->status()->getLabel());
+    }
 }
