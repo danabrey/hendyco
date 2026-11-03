@@ -1,0 +1,84 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use App\Filament\Pages\UcReport;
+use App\Models\Booking;
+use App\Models\BookingClient;
+use App\Models\Expense;
+use App\Models\MileageLog;
+use App\Models\User;
+use App\PaymentMethod;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+class UcReportTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
+
+    public function test_guest_is_redirected_to_login(): void
+    {
+        auth()->logout();
+
+        $this->get('/admin/uc-report')->assertRedirect('/admin/login');
+    }
+
+    public function test_it_defaults_to_the_last_completed_assessment_period(): void
+    {
+        $this->travelTo('2026-11-10');
+
+        Livewire::test(UcReport::class)
+            ->assertSet('from', '2026-09-16')
+            ->assertSet('until', '2026-10-15');
+    }
+
+    public function test_it_totals_income_by_paid_date_expenses_and_mileage(): void
+    {
+        $booking = Booking::factory()->create(['date' => '2026-09-01', 'miles' => 10]);
+        $paid = BookingClient::factory()->for($booking)->create(['price_pence' => 2000, 'paid_at' => '2026-10-01', 'payment_method' => PaymentMethod::Cash]);
+        BookingClient::factory()->for($booking)->create(['price_pence' => 950, 'paid_at' => null]);
+        BookingClient::factory()->for($booking)->create(['price_pence' => 800, 'paid_at' => '2026-10-02', 'payment_method' => PaymentMethod::GiftCard]);
+        BookingClient::factory()->create(['price_pence' => 700, 'paid_at' => '2026-08-01']);
+        $deleted = Booking::factory()->create();
+        BookingClient::factory()->for($deleted)->create(['price_pence' => 650, 'paid_at' => '2026-10-03']);
+        $deleted->delete();
+        Expense::factory()->create(['date' => '2026-10-05', 'amount_pence' => 500]);
+        Expense::factory()->create(['date' => '2026-11-05', 'amount_pence' => 9999]);
+        MileageLog::factory()->create(['date' => '2026-10-10', 'miles' => 20]);
+
+        $report = Livewire::test(UcReport::class)
+            ->set('from', '2026-09-16')
+            ->set('until', '2026-10-15')
+            ->assertSee('£20.00')
+            ->assertDontSee('£9.50')
+            ->assertDontSee('£8.00')
+            ->assertDontSee('£7.00')
+            ->assertDontSee('£6.50')
+            ->assertDontSee('£99.99')
+            ->instance()
+            ->getReport();
+
+        $this->assertSame(2000, $report['income_pence']);
+        $this->assertSame(500, $report['expenses_pence']);
+        $this->assertSame(20 * 45, $report['mileage_pence']);
+        $this->assertSame(500 + 900, $report['expenditure_pence']);
+        $this->assertSame(2000 - 1400, $report['net_pence']);
+        $this->assertTrue($paid->exists);
+    }
+
+    public function test_an_invalid_range_shows_a_message_instead_of_a_report(): void
+    {
+        Livewire::test(UcReport::class)
+            ->set('from', '2026-10-15')
+            ->set('until', '2026-09-16')
+            ->assertSee('must not be after');
+    }
+}

@@ -53,6 +53,15 @@ class BookingClient extends Model
         return $this->belongsTo(Client::class);
     }
 
+    /**
+     * What this row contributes to income once it has been paid. A row covered
+     * by a gift card counts as £0 because the card sale was the income.
+     */
+    public function incomePence(): int
+    {
+        return $this->isCoveredByGiftCard() ? 0 : $this->price_pence;
+    }
+
     public function isCoveredByGiftCard(): bool
     {
         return $this->payment_method === PaymentMethod::GiftCard;
