@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Bookings\Schemas;
 
+use App\Filament\Resources\Clients\ClientResource;
 use App\Models\BookingClient;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -37,7 +38,10 @@ class BookingInfolist
                     ->label('Clients')
                     ->columns(4)
                     ->schema([
-                        TextEntry::make('client.name'),
+                        TextEntry::make('client.name')
+                            ->label('Name')
+                            ->url(fn (BookingClient $record): ?string => $record->client ? ClientResource::getUrl('view', ['record' => $record->client]) : null)
+                            ->color('primary'),
                         TextEntry::make('price_pence')
                             ->label('Price')
                             ->money('GBP', divideBy: 100),

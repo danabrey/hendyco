@@ -40,6 +40,12 @@ class ServiceResource extends Resource
                 PenceInput::make('default_price_pence')
                     ->label('Default price')
                     ->required(),
+                TextInput::make('default_duration_minutes')
+                    ->label('Default duration (minutes)')
+                    ->numeric()
+                    ->integer()
+                    ->minValue(1)
+                    ->maxValue(1440),
             ]);
     }
 
@@ -53,6 +59,10 @@ class ServiceResource extends Resource
                 TextColumn::make('default_price_pence')
                     ->label('Default price')
                     ->money('GBP', divideBy: 100),
+                TextColumn::make('default_duration_minutes')
+                    ->label('Default duration')
+                    ->suffix(' min')
+                    ->placeholder('-'),
             ])
             ->defaultSort('name')
             ->recordActions([

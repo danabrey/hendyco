@@ -44,6 +44,18 @@ class BookingsCalendarTest extends TestCase
         $this->assertSame('2026-11-10 10:15', $event->getEnd()->format('Y-m-d H:i'));
     }
 
+    public function test_calendar_events_fall_back_to_the_services_default_duration(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $booking = Booking::factory()
+            ->for(Service::factory()->state(['default_duration_minutes' => 90]))
+            ->create(['date' => '2026-11-10', 'start_time' => '09:00', 'duration_minutes' => null]);
+
+        $event = $booking->load(['service', 'dogs'])->toCalendarEvent();
+
+        $this->assertSame('2026-11-10 10:30', $event->getEnd()->format('Y-m-d H:i'));
+    }
+
     public function test_clicking_an_empty_day_opens_a_new_booking_for_that_date(): void
     {
         $this->actingAs(User::factory()->create());

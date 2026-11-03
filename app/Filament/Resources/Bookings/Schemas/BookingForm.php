@@ -43,7 +43,10 @@ class BookingForm
                     ->relationship('service', 'name')
                     ->required()
                     ->live()
-                    ->afterStateUpdated(fn (Set $set, Get $get, $state, $old) => static::repriceUnchangedRows($set, $get, $old, $state)),
+                    ->afterStateUpdated(function (Set $set, Get $get, $state, $old): void {
+                        static::repriceUnchangedRows($set, $get, $old, $state);
+                        static::applyDefaultDuration($set, $get, $old, $state);
+                    }),
                 Select::make('dogs')
                     ->relationship('dogs', 'name', fn (Builder $query) => $query->with('client'))
                     ->live()
@@ -169,6 +172,20 @@ class BookingForm
             });
 
         $set('clientRows', $rows);
+    }
+
+    /**
+     * When the service changes, fill in its default duration unless the duration was typed in by hand.
+     */
+    protected static function applyDefaultDuration(Set $set, Get $get, mixed $oldServiceId, mixed $newServiceId): void
+    {
+        $current = $get('duration_minutes');
+        $oldDefault = $oldServiceId ? Service::whereKey($oldServiceId)->value('default_duration_minutes') : null;
+        $newDefault = $newServiceId ? Service::whereKey($newServiceId)->value('default_duration_minutes') : null;
+
+        if (blank($current) || (int) $current === (int) $oldDefault) {
+            $set('duration_minutes', $newDefault);
+        }
     }
 
     /**
