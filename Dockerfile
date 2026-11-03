@@ -39,8 +39,9 @@ RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framewor
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 EXPOSE 80
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["/usr/local/bin/entrypoint.sh"]
