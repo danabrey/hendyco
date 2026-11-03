@@ -91,6 +91,43 @@ class BookingResourceTest extends TestCase
             ->assertFormSet(fn (array $state) => $this->assertEquals(20, collect($state['clientRows'])->first()['price_pence']));
     }
 
+    public function test_selecting_dogs_adds_one_price_row_per_client_at_the_service_price(): void
+    {
+        $service = Service::factory()->create(['default_price_pence' => 1800]);
+        $client = Client::factory()->create();
+        $otherClient = Client::factory()->create();
+        $dogs = [Dog::factory()->for($client)->create(), Dog::factory()->for($client)->create(), Dog::factory()->for($otherClient)->create()];
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $service->id])
+            ->fillForm(['dogs' => collect($dogs)->pluck('id')->all()])
+            ->assertFormSet(function (array $state) use ($client, $otherClient) {
+                $rows = collect($state['clientRows']);
+                $this->assertEqualsCanonicalizing([$client->id, $otherClient->id], $rows->pluck('client_id')->all());
+                $this->assertEquals([18, 18], $rows->pluck('price_pence')->all());
+            });
+    }
+
+    public function test_changing_the_service_reprices_rows_still_at_the_old_default(): void
+    {
+        $old = Service::factory()->create(['default_price_pence' => 1000]);
+        $new = Service::factory()->create(['default_price_pence' => 2500]);
+        $dog = Dog::factory()->create();
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $old->id])
+            ->fillForm(['dogs' => [$dog->id]])
+            ->fillForm(['service_id' => $new->id])
+            ->assertFormSet(fn (array $state) => $this->assertEquals(25, collect($state['clientRows'])->first()['price_pence']));
+    }
+
+    public function test_create_page_ignores_a_malformed_date_in_the_query_string(): void
+    {
+        Livewire::withQueryParams(['date' => 'not-a-date'])
+            ->test(CreateBooking::class)
+            ->assertFormSet(['date' => today()->toDateString()]);
+    }
+
     public function test_create_page_prefills_the_date_from_the_query_string(): void
     {
         Livewire::withQueryParams(['date' => '2026-12-25'])

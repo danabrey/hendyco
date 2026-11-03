@@ -50,7 +50,8 @@ class ServiceResource extends Resource
             ->defaultSort('name')
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->hidden(fn (Service $record): bool => $record->bookings()->exists()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

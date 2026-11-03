@@ -16,7 +16,7 @@ class PenceInput
             ->prefix('£')
             ->minValue(0)
             ->step(0.01)
-            ->formatStateUsing(fn (?int $state): ?float => $state === null ? null : $state / 100)
-            ->dehydrateStateUsing(fn ($state): int => (int) round(((float) $state) * 100));
+            ->formatStateUsing(fn ($state): ?float => is_numeric($state) ? $state / 100 : null)
+            ->dehydrateStateUsing(fn ($state): int => is_numeric($state) ? (int) round(((float) $state) * 100) : 0);
     }
 }
