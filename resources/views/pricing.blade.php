@@ -95,13 +95,13 @@
                 @foreach ($includes as $group)
                     <div class="rounded-2xl bg-brand-cream p-6">
                         <span class="flex h-12 w-12 items-center justify-center rounded-full {{ $group['bg'] }} text-white">
-                            <x-icon :name="$group['icon']" class="h-6 w-6" />
+                            <x-site-icon :name="$group['icon']" class="h-6 w-6" />
                         </span>
                         <h3 class="mt-4 text-lg font-semibold text-brand-navy">{{ $group['title'] }}</h3>
                         <ul class="mt-4 space-y-2 text-sm text-brand-navy/80">
                             @foreach ($group['items'] as $item)
                                 <li class="flex items-start gap-2">
-                                    <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brand-olive" />
+                                    <x-site-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brand-olive" />
                                     <span>{{ $item }}</span>
                                 </li>
                             @endforeach
@@ -114,7 +114,7 @@
 
     <section class="bg-brand-rose">
         <div class="mx-auto max-w-4xl px-4 py-12 text-center text-white sm:px-8">
-            <x-icon name="heart" class="mx-auto h-8 w-8" />
+            <x-site-icon name="heart" class="mx-auto h-8 w-8" />
             <h2 class="mt-2 font-script text-3xl">Free Meet &amp; Greet</h2>
             <p class="mt-2 text-white/90">Let's get to know each other and make sure your pet feels happy and at ease.</p>
         </div>
