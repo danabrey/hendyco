@@ -24,7 +24,7 @@
                     <div class="rounded-2xl bg-white p-8 shadow-sm">
                         <div class="flex gap-1 text-brand-rose">
                             @for ($star = 0; $star < 5; $star++)
-                                <x-icon name="star" class="h-4 w-4" fill="currentColor" />
+                                <x-site-icon name="star" class="h-4 w-4" fill="currentColor" />
                             @endfor
                         </div>
                         <p class="mt-4 text-brand-navy/80 italic">&ldquo;{{ $testimonial['quote'] }}&rdquo;</p>

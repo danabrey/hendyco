@@ -76,7 +76,7 @@
             @foreach ($careIncludes as $item)
                 <div>
                     <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-full {{ $item['bg'] }} text-white">
-                        <x-icon :name="$item['icon']" class="h-6 w-6" />
+                        <x-site-icon :name="$item['icon']" class="h-6 w-6" />
                     </span>
                     <p class="mt-2 text-sm font-medium text-brand-navy">{{ $item['label'] }}</p>
                 </div>
@@ -95,7 +95,7 @@
                     personality, with photo updates so you know they're safe and happy.
                 </p>
                 <div class="mt-6 flex items-start gap-3 rounded-xl bg-brand-rose/10 p-4">
-                    <x-icon name="heart" class="mt-0.5 h-5 w-5 shrink-0 text-brand-rose" />
+                    <x-site-icon name="heart" class="mt-0.5 h-5 w-5 shrink-0 text-brand-rose" />
                     <p class="text-sm text-brand-navy/80">
                         We're experienced with nervous &amp; reactive dogs and nervous or anxious cats.
                         <span class="font-medium text-brand-navy">All dogs welcome.</span>
@@ -108,7 +108,7 @@
                     @foreach (['Kind', 'Patient', 'Reliable'] as $value)
                         <li class="flex items-center gap-3">
                             <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-olive text-white">
-                                <x-icon name="check" class="h-4 w-4" />
+                                <x-site-icon name="check" class="h-4 w-4" />
                             </span>
                             <span class="font-medium text-brand-navy">{{ $value }}</span>
                         </li>
