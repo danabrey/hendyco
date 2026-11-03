@@ -18,6 +18,7 @@ class Service extends Model
     protected $fillable = [
         'name',
         'default_price_pence',
+        'default_duration_minutes',
     ];
 
     /**

@@ -92,6 +92,6 @@ class Booking extends Model implements Eventable
         return CalendarEvent::make($this)
             ->title(trim("{$this->service->name} {$dogs}"))
             ->start($start)
-            ->end($start->copy()->addMinutes($this->duration_minutes ?? 60));
+            ->end($start->copy()->addMinutes($this->duration_minutes ?? $this->service->default_duration_minutes ?? 60));
     }
 }

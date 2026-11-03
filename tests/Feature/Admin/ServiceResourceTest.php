@@ -24,10 +24,10 @@ class ServiceResourceTest extends TestCase
         $this->actingAs(User::factory()->create());
 
         Livewire::test(ManageServices::class)
-            ->callAction('create', ['name' => 'Group walk', 'default_price_pence' => 12.5])
+            ->callAction('create', ['name' => 'Group walk', 'default_price_pence' => 12.5, 'default_duration_minutes' => 60])
             ->assertHasNoFormErrors();
 
-        $this->assertDatabaseHas('services', ['name' => 'Group walk', 'default_price_pence' => 1250]);
+        $this->assertDatabaseHas('services', ['name' => 'Group walk', 'default_price_pence' => 1250, 'default_duration_minutes' => 60]);
     }
 
     public function test_user_can_edit_a_service(): void

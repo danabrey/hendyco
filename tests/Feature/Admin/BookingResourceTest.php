@@ -6,6 +6,7 @@ use App\Filament\Resources\Bookings\Pages\CreateBooking;
 use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\Bookings\Pages\ListBookings;
 use App\Filament\Resources\Bookings\Pages\ViewBooking;
+use App\Filament\Resources\Clients\ClientResource;
 use App\Filament\Resources\Clients\Pages\ViewClient;
 use App\Filament\Resources\Clients\RelationManagers\BookingRowsRelationManager;
 use App\Models\Booking;
@@ -120,6 +121,34 @@ class BookingResourceTest extends TestCase
             ->fillForm(['dogs' => [$dog->id]])
             ->fillForm(['service_id' => $new->id])
             ->assertFormSet(fn (array $state) => $this->assertEquals(25, collect($state['clientRows'])->first()['price_pence']));
+    }
+
+    public function test_choosing_a_service_prefills_its_default_duration_without_overwriting_a_typed_one(): void
+    {
+        $walk = Service::factory()->create(['default_duration_minutes' => 60]);
+        $visit = Service::factory()->create(['default_duration_minutes' => 20]);
+        $none = Service::factory()->create(['default_duration_minutes' => null]);
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->assertFormSet(['duration_minutes' => 60])
+            ->fillForm(['service_id' => $visit->id])
+            ->assertFormSet(['duration_minutes' => 20])
+            ->fillForm(['duration_minutes' => 45])
+            ->fillForm(['service_id' => $walk->id])
+            ->assertFormSet(['duration_minutes' => 45])
+            ->fillForm(['duration_minutes' => 20, 'service_id' => $visit->id])
+            ->fillForm(['service_id' => $none->id])
+            ->assertFormSet(['duration_minutes' => null]);
+    }
+
+    public function test_booking_view_links_each_client_to_their_page(): void
+    {
+        $booking = Booking::factory()->create();
+        $row = BookingClient::factory()->for($booking)->create();
+
+        Livewire::test(ViewBooking::class, ['record' => $booking->getKey()])
+            ->assertSeeHtml('href="'.ClientResource::getUrl('view', ['record' => $row->client]).'"');
     }
 
     public function test_create_page_ignores_a_malformed_date_in_the_query_string(): void
