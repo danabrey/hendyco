@@ -21,6 +21,7 @@
 /public/fonts/filament
 /public/hot
 /public/js/filament
+/public/js/guava
 /public/storage
 /storage/*.key
 /storage/pail
