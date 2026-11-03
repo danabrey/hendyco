@@ -6,6 +6,7 @@ use Database\Factories\DogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dog extends Model
@@ -19,6 +20,14 @@ class Dog extends Model
     protected $fillable = [
         'name',
     ];
+
+    /**
+     * @return BelongsToMany<Booking, $this>
+     */
+    public function bookings(): BelongsToMany
+    {
+        return $this->belongsToMany(Booking::class);
+    }
 
     /**
      * @return BelongsTo<Client, $this>
