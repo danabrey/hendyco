@@ -33,6 +33,8 @@ class GiftCardForm
                     ->required()
                     ->visible(fn (Get $get): bool => static::isType($get('type'), GiftCardType::Money)),
                 Repeater::make('lines')
+                    ->label('Services')
+                    ->addActionLabel('Add service')
                     ->relationship()
                     ->schema([
                         Select::make('service_id')

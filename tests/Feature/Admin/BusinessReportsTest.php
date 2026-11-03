@@ -53,6 +53,17 @@ class BusinessReportsTest extends TestCase
         $this->get('/admin/business-reports')->assertRedirect('/admin/login');
     }
 
+    public function test_print_page_is_login_protected_and_shows_the_report(): void
+    {
+        $this->paidRow(Service::factory()->create(['name' => 'Walk']), Client::factory()->create(), 2000, '2026-10-05');
+        $url = route('filament.admin.reports.business.print', ['from' => '2026-10-01', 'until' => '2026-10-31']);
+
+        $this->get($url)->assertOk()->assertSee('Business report')->assertSee('Income by service')->assertSee('£20.00');
+
+        auth()->logout();
+        $this->get($url)->assertRedirect('/admin/login');
+    }
+
     public function test_it_defaults_to_the_current_tax_year_to_date(): void
     {
         $this->travelTo('2026-11-10');

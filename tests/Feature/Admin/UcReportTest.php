@@ -32,6 +32,28 @@ class UcReportTest extends TestCase
         $this->get('/admin/uc-report')->assertRedirect('/admin/login');
     }
 
+    public function test_print_page_is_login_protected_and_shows_the_report(): void
+    {
+        BookingClient::factory()->create(['price_pence' => 2000, 'paid_at' => '2026-10-01', 'payment_method' => PaymentMethod::Cash]);
+        $url = route('filament.admin.reports.uc.print', ['from' => '2026-09-16', 'until' => '2026-10-15']);
+
+        $this->get($url)->assertOk()->assertSee('Universal Credit report')->assertSee('£20.00')->assertSee('16 September 2026');
+
+        $this->get(route('filament.admin.reports.uc.print', ['from' => '2026-10-15', 'until' => '2026-09-16']))->assertStatus(422);
+        $this->get(route('filament.admin.reports.uc.print', ['from' => 'nope', 'until' => 'x']))->assertStatus(422);
+
+        auth()->logout();
+        $this->get($url)->assertRedirect('/admin/login');
+    }
+
+    public function test_the_page_print_button_links_to_the_print_page_for_the_chosen_range(): void
+    {
+        Livewire::test(UcReport::class)
+            ->set('from', '2026-09-16')
+            ->set('until', '2026-10-15')
+            ->assertSeeHtml('reports/uc/print?from=2026-09-16&amp;until=2026-10-15');
+    }
+
     public function test_it_defaults_to_the_last_completed_assessment_period(): void
     {
         $this->travelTo('2026-11-10');
