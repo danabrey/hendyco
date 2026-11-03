@@ -59,6 +59,7 @@ class AdminPanelProvider extends PanelProvider
             ->authenticatedRoutes(function (): void {
                 Route::get('/expenses/{expense}/receipts/{index}', ExpenseReceiptController::class)
                     ->whereNumber('index')
+                    ->withTrashed()
                     ->name('expenses.receipt');
             })
             ->authMiddleware([

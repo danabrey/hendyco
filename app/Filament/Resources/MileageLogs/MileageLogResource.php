@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\MileageLogs;
 
 use App\Filament\Resources\MileageLogs\Pages\ManageMileageLogs;
+use App\Filament\Tables\DateRangeFilter;
 use App\Models\Booking;
 use App\Models\MileageLog;
 use BackedEnum;
@@ -18,8 +19,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,11 +31,6 @@ class MileageLogResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
     protected static ?string $modelLabel = 'mileage log';
-
-    /**
-     * @var list<string>
-     */
-    protected static array $suggestedCategories = ['Dog show', 'Advertising', 'Supplies', 'Training'];
 
     public static function form(Schema $schema): Schema
     {
@@ -52,9 +46,6 @@ class MileageLogResource extends Resource
                     ->step(0.01),
                 TextInput::make('purpose')
                     ->required()
-                    ->maxLength(255),
-                TextInput::make('category')
-                    ->datalist(static::$suggestedCategories)
                     ->maxLength(255),
                 Select::make('booking_id')
                     ->label('Booking')
@@ -76,9 +67,6 @@ class MileageLogResource extends Resource
                     ->sortable(),
                 TextColumn::make('purpose')
                     ->searchable(),
-                TextColumn::make('category')
-                    ->badge()
-                    ->placeholder('-'),
                 TextColumn::make('booking.date')
                     ->label('Booking')
                     ->date()
@@ -86,16 +74,7 @@ class MileageLogResource extends Resource
             ])
             ->defaultSort('date', 'desc')
             ->filters([
-                SelectFilter::make('category')
-                    ->options(fn (): array => MileageLog::query()->whereNotNull('category')->distinct()->orderBy('category')->pluck('category', 'category')->all()),
-                Filter::make('date_range')
-                    ->schema([
-                        DatePicker::make('from'),
-                        DatePicker::make('until'),
-                    ])
-                    ->query(fn (Builder $query, array $data): Builder => $query
-                        ->when($data['from'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('date', '>=', $date))
-                        ->when($data['until'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('date', '<=', $date))),
+                DateRangeFilter::make(),
                 TrashedFilter::make(),
             ])
             ->recordActions([

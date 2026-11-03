@@ -21,7 +21,6 @@ class MileageLogFactory extends Factory
             'date' => fake()->dateTimeBetween('-3 months', 'now')->format('Y-m-d'),
             'miles' => fake()->randomFloat(1, 2, 60),
             'purpose' => fake()->sentence(3),
-            'category' => fake()->randomElement(['Dog show', 'Advertising', 'Supplies']),
         ];
     }
 }

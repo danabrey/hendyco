@@ -13,7 +13,7 @@ class ExpenseReceiptController extends Controller
      */
     public function __invoke(Expense $expense, int $index): StreamedResponse
     {
-        $path = ($expense->receipts ?? [])[$index] ?? null;
+        $path = $expense->receiptPath($index);
 
         abort_if($path === null || ! Storage::disk('local')->exists($path), 404);
 

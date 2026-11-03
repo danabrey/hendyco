@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Expenses;
 
 use App\Filament\Forms\PenceInput;
 use App\Filament\Resources\Expenses\Pages\ManageExpenses;
+use App\Filament\Tables\DateRangeFilter;
 use App\Models\Expense;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -19,7 +20,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -102,14 +102,7 @@ class ExpenseResource extends Resource
                 SelectFilter::make('expense_category_id')
                     ->label('Category')
                     ->relationship('category', 'name'),
-                Filter::make('date_range')
-                    ->schema([
-                        DatePicker::make('from'),
-                        DatePicker::make('until'),
-                    ])
-                    ->query(fn (Builder $query, array $data): Builder => $query
-                        ->when($data['from'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('date', '>=', $date))
-                        ->when($data['until'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('date', '<=', $date))),
+                DateRangeFilter::make(),
                 TrashedFilter::make(),
             ])
             ->recordActions([

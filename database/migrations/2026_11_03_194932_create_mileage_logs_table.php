@@ -16,7 +16,6 @@ return new class extends Migration
             $table->date('date');
             $table->decimal('miles', 8, 2);
             $table->string('purpose');
-            $table->string('category')->nullable();
             $table->foreignId('booking_id')->nullable()->constrained()->nullOnDelete();
             $table->softDeletes();
             $table->timestamps();

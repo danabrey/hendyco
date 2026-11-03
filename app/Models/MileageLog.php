@@ -20,7 +20,6 @@ class MileageLog extends Model
         'date',
         'miles',
         'purpose',
-        'category',
         'booking_id',
     ];
 

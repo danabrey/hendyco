@@ -68,6 +68,32 @@ class ExpenseResourceTest extends TestCase
         }
     }
 
+    public function test_receipts_must_be_images_or_pdfs(): void
+    {
+        $category = ExpenseCategory::factory()->create();
+
+        Livewire::test(ManageExpenses::class)
+            ->callAction('create', [
+                'date' => '2026-11-02',
+                'description' => 'Bad file',
+                'amount_pence' => 5,
+                'expense_category_id' => $category->id,
+                'receipts' => [UploadedFile::fake()->create('x.exe', 10, 'application/x-msdownload')],
+            ])
+            ->assertHasFormErrors();
+
+        $this->assertDatabaseMissing('expenses', ['description' => 'Bad file']);
+    }
+
+    public function test_receipt_of_a_trashed_expense_is_still_served(): void
+    {
+        Storage::disk('local')->put('receipts/t.txt', 'x');
+        $expense = Expense::factory()->create(['receipts' => ['receipts/t.txt']]);
+        $expense->delete();
+
+        $this->get(route('filament.admin.expenses.receipt', ['expense' => $expense, 'index' => 0]))->assertOk();
+    }
+
     public function test_expense_requires_date_description_amount_and_category(): void
     {
         Livewire::test(ManageExpenses::class)

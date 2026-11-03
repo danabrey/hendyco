@@ -33,7 +33,7 @@ class MileageLogResourceTest extends TestCase
         $booking = Booking::factory()->create();
 
         Livewire::test(ManageMileageLogs::class)
-            ->callAction('create', ['date' => '2026-11-02', 'miles' => 12.5, 'purpose' => 'Dog show', 'category' => 'Dog show', 'booking_id' => $booking->id])
+            ->callAction('create', ['date' => '2026-11-02', 'miles' => 12.5, 'purpose' => 'Dog show', 'booking_id' => $booking->id])
             ->assertHasNoFormErrors();
         Livewire::test(ManageMileageLogs::class)
             ->callAction('create', ['date' => '2026-11-03', 'miles' => 3, 'purpose' => 'Leaflets'])
@@ -50,17 +50,15 @@ class MileageLogResourceTest extends TestCase
             ->assertHasFormErrors(['date' => 'required', 'miles' => 'required', 'purpose' => 'required']);
     }
 
-    public function test_mileage_can_be_filtered_by_category_and_date_range(): void
+    public function test_mileage_can_be_filtered_by_date_range(): void
     {
-        $mine = MileageLog::factory()->create(['category' => 'Advertising', 'date' => '2026-11-02']);
-        $otherCategory = MileageLog::factory()->create(['category' => 'Dog show', 'date' => '2026-11-02']);
-        $tooOld = MileageLog::factory()->create(['category' => 'Advertising', 'date' => '2026-09-01']);
+        $inRange = MileageLog::factory()->create(['date' => '2026-11-02']);
+        $tooOld = MileageLog::factory()->create(['date' => '2026-09-01']);
 
         Livewire::test(ManageMileageLogs::class)
-            ->filterTable('category', 'Advertising')
             ->filterTable('date_range', ['from' => '2026-10-01', 'until' => '2026-11-30'])
-            ->assertCanSeeTableRecords([$mine])
-            ->assertCanNotSeeTableRecords([$otherCategory, $tooOld]);
+            ->assertCanSeeTableRecords([$inRange])
+            ->assertCanNotSeeTableRecords([$tooOld]);
     }
 
     public function test_deleting_a_booking_keeps_its_mileage_log(): void

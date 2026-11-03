@@ -19,9 +19,9 @@ class ClientFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'phone' => fake()->phoneNumber(),
+            'phone' => '07'.fake()->numerify('#########'),
             'emergency_contact_name' => fake()->name(),
-            'emergency_contact_phone' => fake()->phoneNumber(),
+            'emergency_contact_phone' => '07'.fake()->numerify('#########'),
         ];
     }
 
