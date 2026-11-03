@@ -21,13 +21,16 @@ RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
 # ---- Runtime image ----
 FROM php:8.4.27-fpm-alpine
 
-RUN apk add --no-cache nginx supervisor oniguruma-dev \
-    && docker-php-ext-install pdo_mysql mbstring bcmath opcache
+RUN apk add --no-cache nginx supervisor oniguruma-dev icu-dev \
+    && docker-php-ext-install pdo_mysql mbstring bcmath opcache intl
 
 WORKDIR /app
 
 COPY --from=vendor /app /app
 COPY --from=assets /app/public/build /app/public/build
+
+# Publish the Filament and calendar plugin assets (skipped above because composer ran with --no-scripts)
+RUN php artisan filament:assets --no-interaction
 
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
