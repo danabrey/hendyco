@@ -37,7 +37,7 @@ class ExpenseResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Money;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Expenses;
 
     protected static ?int $navigationSort = 1;
 

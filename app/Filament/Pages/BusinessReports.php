@@ -21,7 +21,7 @@ class BusinessReports extends Page
 
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $navigationLabel = 'Business reports';
+    protected static ?string $navigationLabel = 'Business Reports';
 
     protected string $view = 'filament.pages.business-reports';
 

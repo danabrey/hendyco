@@ -33,7 +33,7 @@ class MileageLogResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
-    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Money;
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Expenses;
 
     protected static ?int $navigationSort = 2;
 
