@@ -74,6 +74,41 @@ class UcReportTest extends TestCase
         $this->assertTrue($paid->exists);
     }
 
+    public function test_rows_dated_on_the_first_and_last_day_of_the_range_are_included(): void
+    {
+        BookingClient::factory()->create(['price_pence' => 1111, 'paid_at' => '2026-09-16']);
+        BookingClient::factory()->create(['price_pence' => 2222, 'paid_at' => '2026-10-15']);
+        Expense::factory()->create(['date' => '2026-10-15', 'amount_pence' => 333]);
+
+        $report = Livewire::test(UcReport::class)
+            ->set('from', '2026-09-16')
+            ->set('until', '2026-10-15')
+            ->instance()
+            ->getReport();
+
+        $this->assertSame(3333, $report['income_pence']);
+        $this->assertSame(333, $report['expenses_pence']);
+    }
+
+    public function test_income_from_a_deleted_client_still_appears(): void
+    {
+        $row = BookingClient::factory()->create(['price_pence' => 1500, 'paid_at' => '2026-10-01']);
+        $row->client->delete();
+
+        Livewire::test(UcReport::class)
+            ->set('from', '2026-09-16')
+            ->set('until', '2026-10-15')
+            ->assertSee($row->client->name)
+            ->assertSee('£15.00');
+    }
+
+    public function test_a_malformed_date_shows_the_range_message_instead_of_failing(): void
+    {
+        Livewire::test(UcReport::class)
+            ->set('from', 'not-a-date')
+            ->assertSee('must not be after');
+    }
+
     public function test_an_invalid_range_shows_a_message_instead_of_a_report(): void
     {
         Livewire::test(UcReport::class)

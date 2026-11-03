@@ -8,6 +8,7 @@ use App\Reports\MileageCostCalculator;
 use App\Reports\UcAssessmentPeriod;
 use BackedEnum;
 use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
@@ -41,14 +42,28 @@ class UcReport extends Page
      */
     protected function range(): ?array
     {
-        $from = CarbonImmutable::make($this->from ?: null);
-        $until = CarbonImmutable::make($this->until ?: null);
+        try {
+            $from = CarbonImmutable::make($this->from ?: null);
+            $until = CarbonImmutable::make($this->until ?: null);
+        } catch (InvalidFormatException) {
+            return null;
+        }
 
         return $from && $until && $from->lte($until) ? ['from' => $from, 'until' => $until] : null;
     }
 
     /**
-     * @return array{income: Collection<int, array<string, mixed>>, expenses: Collection<int, Expense>, mileage: Collection<int, array<string, mixed>>, income_pence: int, expenses_pence: int, miles: float, mileage_pence: int, expenditure_pence: int, net_pence: int}|null
+     * @return array{
+     *     income: Collection<int, array<string, mixed>>,
+     *     expenses: Collection<int, Expense>,
+     *     mileage: Collection<int, array<string, mixed>>,
+     *     income_pence: int,
+     *     expenses_pence: int,
+     *     miles: float,
+     *     mileage_pence: int,
+     *     expenditure_pence: int,
+     *     net_pence: int,
+     * }|null
      */
     public function getReport(): ?array
     {

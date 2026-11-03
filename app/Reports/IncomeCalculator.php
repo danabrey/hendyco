@@ -17,7 +17,7 @@ class IncomeCalculator
     public function bookingIncome(CarbonInterface $from, CarbonInterface $until): Collection
     {
         return BookingClient::query()
-            ->with(['client', 'booking.service'])
+            ->with(['client' => fn ($query) => $query->withTrashed(), 'booking.service'])
             ->whereHas('booking')
             ->whereBetween('paid_at', [$from->toDateString(), $until->toDateString()])
             ->orderBy('paid_at')

@@ -52,7 +52,7 @@ class MileageCostCalculator
     }
 
     /**
-     * @return Collection<int, array{date: CarbonImmutable, label: string, miles: float, created_at: CarbonInterface, cost_pence?: int}>
+     * @return Collection<int, array{date: CarbonImmutable, label: string, miles: float, created_at: CarbonInterface}>
      */
     protected function rawEntries(CarbonImmutable $from, CarbonImmutable $until): Collection
     {
