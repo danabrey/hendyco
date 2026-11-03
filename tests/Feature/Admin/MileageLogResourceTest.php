@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Filament\Resources\MileageLogs\MileageLogResource;
 use App\Filament\Resources\MileageLogs\Pages\ManageMileageLogs;
 use App\Models\Booking;
 use App\Models\MileageLog;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -59,6 +61,35 @@ class MileageLogResourceTest extends TestCase
             ->filterTable('date_range', ['from' => '2026-10-01', 'until' => '2026-11-30'])
             ->assertCanSeeTableRecords([$inRange])
             ->assertCanNotSeeTableRecords([$tooOld]);
+    }
+
+    public function test_booking_mileage_is_listed_but_read_only(): void
+    {
+        $booking = Booking::factory()->create(['miles' => 12]);
+        $fromBooking = MileageLog::where('booking_mileage', true)->firstOrFail();
+        $logged = MileageLog::factory()->create();
+
+        Livewire::test(ManageMileageLogs::class)
+            ->assertCanSeeTableRecords([$fromBooking, $logged])
+            ->assertSee('Booking')
+            ->assertActionHidden(TestAction::make('edit')->table($fromBooking))
+            ->assertActionHidden(TestAction::make('delete')->table($fromBooking))
+            ->assertActionVisible(TestAction::make('edit')->table($logged))
+            ->assertActionVisible(TestAction::make('delete')->table($logged))
+            ->assertActionVisible(TestAction::make('openBooking')->table($fromBooking))
+            ->assertActionHidden(TestAction::make('openBooking')->table($logged))
+            ->filterTable('source', 'logged')
+            ->assertCanSeeTableRecords([$logged])
+            ->assertCanNotSeeTableRecords([$fromBooking])
+            ->filterTable('source', 'booking')
+            ->assertCanSeeTableRecords([$fromBooking])
+            ->assertCanNotSeeTableRecords([$logged]);
+
+        $this->assertSame($booking->id, $fromBooking->booking_id);
+        $this->assertFalse(MileageLogResource::canEdit($fromBooking));
+        $this->assertFalse(MileageLogResource::canDelete($fromBooking));
+        $this->assertFalse(MileageLogResource::canRestore($fromBooking));
+        $this->assertTrue(MileageLogResource::canEdit($logged));
     }
 
     public function test_deleting_a_booking_keeps_its_mileage_log(): void

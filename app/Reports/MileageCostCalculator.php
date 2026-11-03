@@ -2,7 +2,6 @@
 
 namespace App\Reports;
 
-use App\Models\Booking;
 use App\Models\MileageLog;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -56,20 +55,6 @@ class MileageCostCalculator
      */
     protected function rawEntries(CarbonImmutable $from, CarbonImmutable $until): Collection
     {
-        $bookings = Booking::query()
-            ->with('service')
-            ->where('miles', '>', 0)
-            ->whereBetween('date', [$from->toDateString(), $until->toDateString()])
-            ->get()
-            ->map(fn (Booking $booking): array => [
-                'date' => CarbonImmutable::instance($booking->date),
-                'label' => 'Booking: '.$booking->service->name,
-                'miles' => (float) $booking->miles,
-                'created_at' => $booking->created_at,
-                'id' => $booking->id,
-                'source' => 'booking',
-            ]);
-
         $logs = MileageLog::query()
             ->where('miles', '>', 0)
             ->whereBetween('date', [$from->toDateString(), $until->toDateString()])
@@ -80,14 +65,13 @@ class MileageCostCalculator
                 'miles' => (float) $log->miles,
                 'created_at' => $log->created_at,
                 'id' => $log->id,
-                'source' => 'log',
             ]);
 
-        return $bookings->concat($logs)
+        return $logs
             ->sortBy([
                 fn (array $a, array $b): int => $a['date'] <=> $b['date'],
                 fn (array $a, array $b): int => $a['created_at'] <=> $b['created_at'],
-                fn (array $a, array $b): int => [$a['source'], $a['id']] <=> [$b['source'], $b['id']],
+                fn (array $a, array $b): int => $a['id'] <=> $b['id'],
             ])
             ->values()
             ->map(fn (array $entry): array => collect($entry)->only(['date', 'label', 'miles', 'created_at'])->all());
