@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UnpaidBookingsWidget extends TableWidget
 {
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 3;
 
     protected int|string|array $columnSpan = 'full';
 
@@ -21,8 +21,7 @@ class UnpaidBookingsWidget extends TableWidget
     {
         return $table
             ->query(fn (): Builder => BookingClient::query()
-                ->unpaid()
-                ->whereHas('booking')
+                ->awaitingPayment()
                 ->with(['client' => fn ($query) => $query->withTrashed(), 'booking.service', 'giftCardRedemption'])
                 ->orderBy(Booking::select('date')->whereColumn('bookings.id', 'booking_clients.booking_id'))
                 ->orderBy('booking_clients.id'))

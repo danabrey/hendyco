@@ -116,4 +116,14 @@ class BookingClient extends Model
                 ->whereNull('payment_method')
                 ->orWhere('payment_method', '!=', PaymentMethod::GiftCard));
     }
+
+    /**
+     * Unpaid rows on bookings that still exist, i.e. money Becky is waiting for.
+     *
+     * @param  Builder<BookingClient>  $query
+     */
+    public function scopeAwaitingPayment(Builder $query): void
+    {
+        $query->unpaid()->whereHas('booking');
+    }
 }
