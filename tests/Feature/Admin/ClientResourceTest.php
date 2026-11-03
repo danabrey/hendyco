@@ -87,7 +87,9 @@ class ClientResourceTest extends TestCase
         Livewire::test(DogsRelationManager::class, [
             'ownerRecord' => $client,
             'pageClass' => ViewClient::class,
-        ])->assertCanSeeTableRecords([$dog]);
+        ])
+            ->assertCanSeeTableRecords([$dog])
+            ->assertTableActionVisible('create');
     }
 
     public function test_user_can_add_several_dogs_to_a_client(): void
