@@ -21,4 +21,9 @@ class NavigationTest extends TestCase
             'Settings', 'Services', 'Expense Categories',
         ], false);
     }
+
+    public function test_panel_uses_the_hendy_and_co_branding(): void
+    {
+        $this->get('/admin/login')->assertOk()->assertSee('Hendy &amp; Co.', false)->assertSee('logo-mark.png', false);
+    }
 }

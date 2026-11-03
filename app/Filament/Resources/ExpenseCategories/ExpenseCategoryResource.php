@@ -8,6 +8,7 @@ use App\NavigationGroup;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -47,6 +48,7 @@ class ExpenseCategoryResource extends Resource
             ])
             ->defaultSort('name')
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make()
                     ->hidden(fn (ExpenseCategory $record): bool => $record->expenses()->withTrashed()->exists()),

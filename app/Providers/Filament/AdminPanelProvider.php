@@ -14,7 +14,9 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Guava\Calendar\CalendarPlugin;
+use Illuminate\Contracts\View\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -32,9 +34,16 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Hendy & Co.')
+            ->brandLogo(fn (): View => view('filament.brand'))
+            ->brandLogoHeight('2.5rem')
+            ->favicon(asset('images/logo-mark.png'))
+            ->font('Instrument Sans')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#c17b72'),
+                'gray' => Color::Stone,
             ])
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('filament.brand-head'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

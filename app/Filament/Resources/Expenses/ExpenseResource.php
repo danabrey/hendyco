@@ -13,10 +13,12 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -78,6 +80,26 @@ class ExpenseResource extends Resource
             ]);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextEntry::make('date')
+                    ->date(),
+                TextEntry::make('description'),
+                TextEntry::make('amount_pence')
+                    ->label('Amount')
+                    ->money('GBP', divideBy: 100),
+                TextEntry::make('category.name')
+                    ->label('Category'),
+                TextEntry::make('receipts')
+                    ->state(fn (Expense $record): HtmlString => $record->receiptLinks())
+                    ->html()
+                    ->placeholder('-')
+                    ->columnSpanFull(),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -94,12 +116,7 @@ class ExpenseResource extends Resource
                     ->money('GBP', divideBy: 100)
                     ->sortable(),
                 TextColumn::make('receipts')
-                    ->state(fn (Expense $record): HtmlString => new HtmlString(
-                        collect($record->receipts ?? [])
-                            ->keys()
-                            ->map(fn (int $index): string => '<a class="text-primary-600 underline" target="_blank" href="'.e(route('filament.admin.expenses.receipt', ['expense' => $record, 'index' => $index])).'">Receipt '.($index + 1).'</a>')
-                            ->implode(' · ')
-                    ))
+                    ->state(fn (Expense $record): HtmlString => $record->receiptLinks())
                     ->html()
                     ->placeholder('-'),
             ])
@@ -112,6 +129,7 @@ class ExpenseResource extends Resource
                 TrashedFilter::make(),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
