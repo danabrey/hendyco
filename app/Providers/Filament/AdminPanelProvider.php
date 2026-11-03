@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Http\Controllers\ExpenseReceiptController;
 use App\Http\Controllers\GiftCardPrintController;
 use App\Http\Controllers\ReportPrintController;
+use App\NavigationGroup;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -57,6 +58,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->navigationGroups(NavigationGroup::class)
             ->plugin(CalendarPlugin::make())
             ->authenticatedRoutes(function (): void {
                 Route::get('/expenses/{expense}/receipts/{index}', ExpenseReceiptController::class)

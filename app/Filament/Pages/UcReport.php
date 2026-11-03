@@ -3,11 +3,13 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Pages\Concerns\HasReportDateRange;
+use App\NavigationGroup;
 use App\Reports\UcAssessmentPeriod;
 use App\Reports\UcReportBuilder;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use UnitEnum;
 
 class UcReport extends Page
 {
@@ -15,9 +17,11 @@ class UcReport extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
-    protected static ?string $navigationLabel = 'UC report';
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Reports;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'UC report';
 
     protected string $view = 'filament.pages.uc-report';
 
