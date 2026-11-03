@@ -25,9 +25,10 @@ class ClientsTable
                     ->sortable(),
                 TextColumn::make('phone')
                     ->searchable(),
-                TextColumn::make('dogs_count')
-                    ->counts('dogs')
-                    ->label('Dogs'),
+                TextColumn::make('dogs.name')
+                    ->label('Dogs')
+                    ->badge()
+                    ->searchable(),
                 TextColumn::make('archived_at')
                     ->label('Archived')
                     ->dateTime()
