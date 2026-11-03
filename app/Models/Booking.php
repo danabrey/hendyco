@@ -37,7 +37,9 @@ class Booking extends Model implements Eventable
                 app(GiftCardRedeemer::class)->release($booking->id);
             }
         });
-        static::restored(fn (Booking $booking) => app(GiftCardRedeemer::class)->syncBooking($booking->id));
+        static::restored(function (Booking $booking): void {
+            app(GiftCardRedeemer::class)->syncBooking($booking->id);
+        });
         static::saved(function (Booking $booking): void {
             if ($booking->wasChanged('service_id')) {
                 app(GiftCardRedeemer::class)->syncBooking($booking->id);

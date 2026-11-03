@@ -42,7 +42,9 @@ class BookingClient extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn (BookingClient $row) => app(GiftCardRedeemer::class)->sync($row));
+        static::saved(function (BookingClient $row): void {
+            app(GiftCardRedeemer::class)->sync($row);
+        });
     }
 
     /**

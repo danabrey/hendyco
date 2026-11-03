@@ -152,4 +152,44 @@ class GiftCardRedemptionTest extends TestCase
         $this->assertSame(1, $card->remainingQuantityFor($included->id));
         $this->assertNull($row->fresh()->gift_card_id);
     }
+
+    public function test_a_redemption_survives_the_card_expiring_or_being_deleted(): void
+    {
+        $card = GiftCard::factory()->create(['value_pence' => 5000, 'expires_at' => today()->addDay()]);
+        $row = $this->rowFor(Booking::factory()->create(), $card, 1500);
+
+        $card->update(['expires_at' => today()->subDay()]);
+        $row->update(['price_pence' => 1500]);
+        $this->assertSame(3500, $card->balancePence());
+
+        $card->delete();
+        $row->refresh()->update(['price_pence' => 1500]);
+        $this->assertSame(1, $card->redemptions()->count());
+        $this->assertSame($card->id, $row->fresh()->gift_card_id);
+    }
+
+    public function test_raising_the_price_after_full_cover_leaves_the_remainder_unpaid(): void
+    {
+        $card = GiftCard::factory()->create(['value_pence' => 1500]);
+        $row = $this->rowFor(Booking::factory()->create(), $card, 1500);
+        $this->assertSame(PaymentMethod::GiftCard, $row->fresh()->payment_method);
+
+        $row->update(['price_pence' => 2000]);
+
+        $row->refresh();
+        $this->assertNull($row->payment_method);
+        $this->assertSame(1500, (int) $card->redemptions()->sum('amount_pence'));
+        $this->assertTrue(BookingClient::unpaid()->whereKey($row->id)->exists());
+    }
+
+    public function test_removing_the_card_clears_the_gift_card_payment_method(): void
+    {
+        $card = GiftCard::factory()->create(['value_pence' => 5000]);
+        $row = $this->rowFor(Booking::factory()->create(), $card, 1500);
+
+        $row->update(['gift_card_id' => null]);
+
+        $this->assertNull($row->fresh()->payment_method);
+        $this->assertTrue(BookingClient::unpaid()->whereKey($row->id)->exists());
+    }
 }

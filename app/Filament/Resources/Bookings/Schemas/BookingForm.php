@@ -115,8 +115,10 @@ class BookingForm
         }
 
         return GiftCard::query()
+            ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>=', today()))
+            ->orWhere('id', $record?->gift_card_id)
             ->get()
-            ->filter(fn (GiftCard $card): bool => $card->isRedeemableFor((int) $serviceId, $record?->id))
+            ->filter(fn (GiftCard $card): bool => $card->id === $record?->gift_card_id || $card->isRedeemableFor((int) $serviceId, $record?->id))
             ->mapWithKeys(fn (GiftCard $card): array => [$card->id => $card->code.' – '.$card->remainingSummary()])
             ->all();
     }
@@ -127,7 +129,9 @@ class BookingForm
             $card = $value ? GiftCard::find($value) : null;
             $serviceId = (int) $get('../../service_id');
 
-            if ($card && ! $card->isRedeemableFor($serviceId, $record?->id)) {
+            $alreadyRedeemed = $card && $record?->gift_card_id === $card->id && $record->giftCardRedemption !== null;
+
+            if ($card && ! $alreadyRedeemed && ! $card->isRedeemableFor($serviceId, $record?->id)) {
                 $fail('This gift card cannot be used for this service, or has nothing left.');
             }
         };

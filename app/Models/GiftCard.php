@@ -120,9 +120,9 @@ class GiftCard extends Model
      * How much of a price this card would cover for a booking of the given service.
      * Service cards cover the whole price of an included service; money cards cover up to their balance.
      */
-    public function coverageFor(int $serviceId, int $pricePence, ?int $exceptBookingClientId = null): int
+    public function coverageFor(int $serviceId, int $pricePence, ?int $exceptBookingClientId = null, bool $allowInactive = false): int
     {
-        if ($this->trashed() || $this->isExpired()) {
+        if (! $allowInactive && ($this->trashed() || $this->isExpired())) {
             return 0;
         }
 
@@ -134,10 +134,7 @@ class GiftCard extends Model
 
     public function isRedeemableFor(int $serviceId, ?int $exceptBookingClientId = null): bool
     {
-        return match ($this->type) {
-            GiftCardType::Money => ! $this->trashed() && ! $this->isExpired() && $this->balancePence($exceptBookingClientId) > 0,
-            GiftCardType::Service => ! $this->trashed() && ! $this->isExpired() && $this->remainingQuantityFor($serviceId, $exceptBookingClientId) > 0,
-        };
+        return $this->coverageFor($serviceId, PHP_INT_MAX, $exceptBookingClientId) > 0;
     }
 
     /**

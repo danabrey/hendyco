@@ -5,6 +5,7 @@ namespace App\Filament\Resources\GiftCards\RelationManagers;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class RedemptionsRelationManager extends RelationManager
 {
@@ -33,7 +34,7 @@ class RedemptionsRelationManager extends RelationManager
                     ->label('Covered')
                     ->money('GBP', divideBy: 100),
             ])
-            ->modifyQueryUsing(fn ($query) => $query->whereHas('bookingClient.booking')->with('bookingClient.booking', 'bookingClient.client'))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereHas('bookingClient.booking')->with('bookingClient.booking', 'bookingClient.client', 'service'))
             ->defaultSort('id', 'desc');
     }
 }
