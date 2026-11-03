@@ -90,6 +90,14 @@ class BookingClient extends Model
             return 0;
         }
 
+        return $this->outstandingPence();
+    }
+
+    /**
+     * The price left after anything a gift card covers.
+     */
+    public function outstandingPence(): int
+    {
         return max(0, $this->price_pence - (int) $this->giftCardRedemption?->amount_pence);
     }
 

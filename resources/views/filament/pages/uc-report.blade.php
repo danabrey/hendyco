@@ -4,19 +4,9 @@
 @endphp
 
 <x-filament-panels::page>
-    <style>
-        @media print {
-            .fi-sidebar, .fi-topbar, .fi-header-actions-ctn, .uc-no-print { display: none !important; }
-            .fi-main-ctn, .fi-main { margin: 0 !important; padding: 0 !important; max-width: none !important; }
-        }
-        .uc-report table { width: 100%; border-collapse: collapse; }
-        .uc-report th, .uc-report td { padding: 0.35rem 0.5rem; text-align: left; border-bottom: 1px solid rgb(128 128 128 / 0.3); }
-        .uc-report .num { text-align: right; white-space: nowrap; }
-        .uc-report h3 { margin-top: 1.5rem; font-weight: 600; }
-        .uc-report tfoot td { font-weight: 600; }
-    </style>
+    @include('filament.pages.partials.report-styles')
 
-    <div class="uc-no-print" style="display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;">
+    <div class="report-no-print" style="display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;">
         <label>
             <span>From</span>
             <x-filament::input.wrapper>
@@ -35,7 +25,7 @@
     @if ($report === null)
         <p>Choose a valid date range (the start date must not be after the end date).</p>
     @else
-        <div class="uc-report">
+        <div class="report">
             <p>
                 Period: {{ \Illuminate\Support\Carbon::parse($from)->format('j F Y') }}
                 to {{ \Illuminate\Support\Carbon::parse($until)->format('j F Y') }}

@@ -2,19 +2,20 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Pages\Concerns\HasReportDateRange;
 use App\Models\Expense;
 use App\Reports\IncomeCalculator;
 use App\Reports\MileageCostCalculator;
 use App\Reports\UcAssessmentPeriod;
 use BackedEnum;
-use Carbon\CarbonImmutable;
-use Carbon\Exceptions\InvalidFormatException;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 
 class UcReport extends Page
 {
+    use HasReportDateRange;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static ?string $navigationLabel = 'UC report';
@@ -25,31 +26,12 @@ class UcReport extends Page
 
     protected static ?string $title = 'Universal Credit report';
 
-    public string $from = '';
-
-    public string $until = '';
-
     public function mount(): void
     {
         [$from, $until] = UcAssessmentPeriod::lastCompleted(today());
 
         $this->from = $from->toDateString();
         $this->until = $until->toDateString();
-    }
-
-    /**
-     * @return array{from: CarbonImmutable, until: CarbonImmutable}|null
-     */
-    protected function range(): ?array
-    {
-        try {
-            $from = CarbonImmutable::make($this->from ?: null);
-            $until = CarbonImmutable::make($this->until ?: null);
-        } catch (InvalidFormatException) {
-            return null;
-        }
-
-        return $from && $until && $from->lte($until) ? ['from' => $from, 'until' => $until] : null;
     }
 
     /**
@@ -67,7 +49,7 @@ class UcReport extends Page
      */
     public function getReport(): ?array
     {
-        $range = $this->range();
+        $range = $this->dateRange();
 
         if ($range === null) {
             return null;
