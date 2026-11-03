@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Clients\Schemas;
 
+use App\Models\Client;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -20,7 +21,7 @@ class ClientInfolist
                     ->placeholder('-'),
                 TextEntry::make('archived_at')
                     ->dateTime()
-                    ->visible(fn ($record): bool => $record->isArchived()),
+                    ->visible(fn (Client $record): bool => $record->isArchived()),
             ]);
     }
 }

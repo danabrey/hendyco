@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Database\Factories\ClientFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -57,13 +56,5 @@ class Client extends Model
     public function unarchive(): void
     {
         $this->forceFill(['archived_at' => null])->save();
-    }
-
-    /**
-     * @param  Builder<Client>  $query
-     */
-    public function scopeActive(Builder $query): void
-    {
-        $query->whereNull('archived_at');
     }
 }
