@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Database\Factories\BookingFactory;
+use Guava\Calendar\Contracts\Eventable;
+use Guava\Calendar\ValueObjects\CalendarEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Booking extends Model
+class Booking extends Model implements Eventable
 {
     /** @use HasFactory<BookingFactory> */
     use HasFactory, SoftDeletes;
@@ -62,5 +64,16 @@ class Booking extends Model
     public function clientRows(): HasMany
     {
         return $this->hasMany(BookingClient::class);
+    }
+
+    public function toCalendarEvent(): CalendarEvent
+    {
+        $start = $this->date->copy()->setTimeFromTimeString($this->start_time);
+        $dogs = $this->dogs->pluck('name')->implode(', ');
+
+        return CalendarEvent::make($this)
+            ->title(trim("{$this->service->name} {$dogs}"))
+            ->start($start)
+            ->end($start->copy()->addMinutes($this->duration_minutes ?? 60));
     }
 }
