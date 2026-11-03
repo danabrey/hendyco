@@ -6,6 +6,7 @@ use App\Filament\Pages\UcReport;
 use App\Models\Booking;
 use App\Models\BookingClient;
 use App\Models\Expense;
+use App\Models\GiftCard;
 use App\Models\MileageLog;
 use App\Models\User;
 use App\PaymentMethod;
@@ -107,6 +108,22 @@ class UcReportTest extends TestCase
         Livewire::test(UcReport::class)
             ->set('from', 'not-a-date')
             ->assertSee('must not be after');
+    }
+
+    public function test_gift_card_sales_count_on_the_sale_date_and_card_covered_amounts_do_not(): void
+    {
+        GiftCard::factory()->create(['price_paid_pence' => 4000, 'value_pence' => 4000, 'sold_at' => '2026-10-01']);
+        GiftCard::factory()->create(['price_paid_pence' => 9999, 'sold_at' => '2026-11-01']);
+        $card = GiftCard::factory()->create(['price_paid_pence' => 0, 'value_pence' => 1000, 'sold_at' => '2026-01-01']);
+        BookingClient::factory()->create(['price_pence' => 1500, 'gift_card_id' => $card->id, 'paid_at' => '2026-10-05', 'payment_method' => PaymentMethod::Cash]);
+
+        $report = Livewire::test(UcReport::class)
+            ->set('from', '2026-09-16')
+            ->set('until', '2026-10-15')
+            ->instance()
+            ->getReport();
+
+        $this->assertSame(4000 + 500, $report['income_pence']);
     }
 
     public function test_an_invalid_range_shows_a_message_instead_of_a_report(): void

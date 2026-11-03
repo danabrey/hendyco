@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\GiftCards\GiftCardRedeemer;
 use Database\Factories\BookingFactory;
 use Guava\Calendar\Contracts\Eventable;
 use Guava\Calendar\ValueObjects\CalendarEvent;
@@ -28,6 +29,21 @@ class Booking extends Model implements Eventable
         'miles',
         'notes',
     ];
+
+    protected static function booted(): void
+    {
+        static::deleted(function (Booking $booking): void {
+            if (! $booking->isForceDeleting()) {
+                app(GiftCardRedeemer::class)->release($booking->id);
+            }
+        });
+        static::restored(fn (Booking $booking) => app(GiftCardRedeemer::class)->syncBooking($booking->id));
+        static::saved(function (Booking $booking): void {
+            if ($booking->wasChanged('service_id')) {
+                app(GiftCardRedeemer::class)->syncBooking($booking->id);
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.

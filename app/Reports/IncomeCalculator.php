@@ -3,11 +3,32 @@
 namespace App\Reports;
 
 use App\Models\BookingClient;
+use App\Models\GiftCard;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 class IncomeCalculator
 {
+    /**
+     * Gift card sales, counted as income on the sale date.
+     *
+     * @return Collection<int, array{date: CarbonInterface, label: string, amount_pence: int}>
+     */
+    public function giftCardSales(CarbonInterface $from, CarbonInterface $until): Collection
+    {
+        return GiftCard::query()
+            ->whereBetween('sold_at', [$from->toDateString(), $until->toDateString()])
+            ->where('price_paid_pence', '>', 0)
+            ->orderBy('sold_at')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (GiftCard $card): array => [
+                'date' => $card->sold_at,
+                'label' => 'Gift card sale – '.$card->code,
+                'amount_pence' => $card->price_paid_pence,
+            ]);
+    }
+
     /**
      * Cash received on bookings, by the date it was paid. Rows that count as £0
      * (for example those paid by gift card) are left out.
@@ -17,7 +38,7 @@ class IncomeCalculator
     public function bookingIncome(CarbonInterface $from, CarbonInterface $until): Collection
     {
         return BookingClient::query()
-            ->with(['client' => fn ($query) => $query->withTrashed(), 'booking.service'])
+            ->with(['client' => fn ($query) => $query->withTrashed(), 'booking.service', 'giftCardRedemption'])
             ->whereHas('booking')
             ->whereBetween('paid_at', [$from->toDateString(), $until->toDateString()])
             ->orderBy('paid_at')

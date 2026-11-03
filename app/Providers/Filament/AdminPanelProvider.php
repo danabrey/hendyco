@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Http\Controllers\ExpenseReceiptController;
+use App\Http\Controllers\GiftCardPrintController;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -61,6 +62,9 @@ class AdminPanelProvider extends PanelProvider
                     ->whereNumber('index')
                     ->withTrashed()
                     ->name('expenses.receipt');
+                Route::get('/gift-cards/{giftCard}/print', GiftCardPrintController::class)
+                    ->withTrashed()
+                    ->name('gift-cards.print');
             })
             ->authMiddleware([
                 Authenticate::class,

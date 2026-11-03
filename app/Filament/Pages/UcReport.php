@@ -73,7 +73,11 @@ class UcReport extends Page
             return null;
         }
 
-        $income = (new IncomeCalculator)->bookingIncome($range['from'], $range['until']);
+        $calculator = new IncomeCalculator;
+        $income = $calculator->bookingIncome($range['from'], $range['until'])
+            ->concat($calculator->giftCardSales($range['from'], $range['until']))
+            ->sortBy(fn (array $entry): string => $entry['date']->toDateString())
+            ->values();
         $expenses = Expense::query()
             ->with('category')
             ->whereBetween('date', [$range['from']->toDateString(), $range['until']->toDateString()])
