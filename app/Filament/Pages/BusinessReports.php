@@ -2,16 +2,17 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Pages\Concerns\HasReportDateRange;
 use App\Reports\BusinessReport;
 use App\Reports\TaxYear;
 use BackedEnum;
-use Carbon\CarbonImmutable;
-use Carbon\Exceptions\InvalidFormatException;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 
 class BusinessReports extends Page
 {
+    use HasReportDateRange;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
     protected static ?string $navigationLabel = 'Business reports';
@@ -21,10 +22,6 @@ class BusinessReports extends Page
     protected string $view = 'filament.pages.business-reports';
 
     protected static ?string $title = 'Business reports';
-
-    public string $from = '';
-
-    public string $until = '';
 
     public function mount(): void
     {
@@ -37,17 +34,12 @@ class BusinessReports extends Page
      */
     public function getReport(): ?array
     {
-        try {
-            $from = CarbonImmutable::make($this->from ?: null);
-            $until = CarbonImmutable::make($this->until ?: null);
-        } catch (InvalidFormatException) {
+        $range = $this->dateRange();
+
+        if ($range === null) {
             return null;
         }
 
-        if (! $from || ! $until || $from->gt($until)) {
-            return null;
-        }
-
-        return (new BusinessReport)->build($from, $until);
+        return (new BusinessReport)->build($range['from'], $range['until']);
     }
 }

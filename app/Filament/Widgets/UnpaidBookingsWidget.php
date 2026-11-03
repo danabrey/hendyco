@@ -23,7 +23,7 @@ class UnpaidBookingsWidget extends TableWidget
             ->query(fn (): Builder => BookingClient::query()
                 ->unpaid()
                 ->whereHas('booking')
-                ->with(['client', 'booking.service', 'giftCardRedemption'])
+                ->with(['client' => fn ($query) => $query->withTrashed(), 'booking.service', 'giftCardRedemption'])
                 ->orderBy(Booking::select('date')->whereColumn('bookings.id', 'booking_clients.booking_id'))
                 ->orderBy('booking_clients.id'))
             ->columns([
@@ -40,7 +40,7 @@ class UnpaidBookingsWidget extends TableWidget
                     ->money('GBP', divideBy: 100),
                 TextColumn::make('days_outstanding')
                     ->label('Days outstanding')
-                    ->state(fn (BookingClient $record): int => (int) $record->booking->date->startOfDay()->diffInDays(today(), false)),
+                    ->state(fn (BookingClient $record): int => max(0, (int) $record->booking->date->startOfDay()->diffInDays(today(), false))),
             ])
             ->paginated([10, 25])
             ->emptyStateHeading('Nothing outstanding');

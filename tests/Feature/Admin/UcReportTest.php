@@ -47,7 +47,7 @@ class UcReportTest extends TestCase
         $paid = BookingClient::factory()->for($booking)->create(['price_pence' => 2000, 'paid_at' => '2026-10-01', 'payment_method' => PaymentMethod::Cash]);
         BookingClient::factory()->for($booking)->create(['price_pence' => 950, 'paid_at' => null]);
         BookingClient::factory()->for($booking)->create(['price_pence' => 800, 'paid_at' => '2026-10-02', 'payment_method' => PaymentMethod::GiftCard]);
-        BookingClient::factory()->create(['price_pence' => 700, 'paid_at' => '2026-08-01']);
+        BookingClient::factory()->for(Booking::factory()->create(['miles' => null]))->create(['price_pence' => 700, 'paid_at' => '2026-08-01']);
         $deleted = Booking::factory()->create();
         BookingClient::factory()->for($deleted)->create(['price_pence' => 650, 'paid_at' => '2026-10-03']);
         $deleted->delete();

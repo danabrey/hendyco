@@ -9,6 +9,8 @@ use Illuminate\Support\Collection;
 
 class IncomeCalculator
 {
+    public const GIFT_CARD_SALES_LABEL = 'Gift card sales';
+
     /**
      * Gift card sales, counted as income on the sale date.
      *
@@ -25,8 +27,8 @@ class IncomeCalculator
             ->map(fn (GiftCard $card): array => [
                 'date' => $card->sold_at,
                 'label' => 'Gift card sale – '.$card->code,
-                'service' => 'Gift card sales',
-                'client' => 'Gift card sales',
+                'service' => self::GIFT_CARD_SALES_LABEL,
+                'client' => self::GIFT_CARD_SALES_LABEL,
                 'amount_pence' => $card->price_paid_pence,
             ]);
     }

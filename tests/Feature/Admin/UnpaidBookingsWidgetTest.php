@@ -61,6 +61,17 @@ class UnpaidBookingsWidgetTest extends TestCase
             ->assertSee('£5.00');
     }
 
+    public function test_a_future_booking_shows_zero_days_and_a_deleted_client_keeps_their_name(): void
+    {
+        $this->travelTo('2026-11-10');
+        $row = BookingClient::factory()->for(Booking::factory()->create(['date' => '2026-11-17']))->create();
+        $row->client->delete();
+
+        Livewire::test(UnpaidBookingsWidget::class)
+            ->assertSee($row->client->name)
+            ->assertDontSee('-7');
+    }
+
     public function test_it_appears_on_the_dashboard(): void
     {
         $this->get('/admin')->assertOk()->assertSeeLivewire(UnpaidBookingsWidget::class);

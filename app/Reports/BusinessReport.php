@@ -45,14 +45,14 @@ class BusinessReport
         return [
             'income' => [
                 'total' => $incomeTotal,
-                'by_month' => $this->totals($income, fn (array $entry): string => $entry['date']->format('Y-m'), fn (array $entry): string => $entry['date']->format('F Y'), 'amount_pence'),
-                'by_service' => $this->totals($income, fn (array $entry): string => $entry['service'], fn (array $entry): string => $entry['service'], 'amount_pence', byAmount: true),
-                'by_client' => $this->totals($income, fn (array $entry): string => $entry['client'], fn (array $entry): string => $entry['client'], 'amount_pence', byAmount: true),
+                'by_month' => $this->totals($income, fn (array $entry): string => $entry['date']->format('Y-m'), fn (array $entry): string => $entry['date']->format('F Y')),
+                'by_service' => $this->totals($income, fn (array $entry): string => $entry['service'], fn (array $entry): string => $entry['service'], byAmount: true),
+                'by_client' => $this->totals($income, fn (array $entry): string => $entry['client'], fn (array $entry): string => $entry['client'], byAmount: true),
             ],
             'expenses' => [
                 'total' => $expensesTotal,
-                'by_month' => $this->totals($expenses, fn (Expense $expense): string => $expense->date->format('Y-m'), fn (Expense $expense): string => $expense->date->format('F Y'), 'amount_pence'),
-                'by_category' => $this->totals($expenses, fn (Expense $expense): string => $expense->category->name, fn (Expense $expense): string => $expense->category->name, 'amount_pence', byAmount: true),
+                'by_month' => $this->totals($expenses, fn (Expense $expense): string => $expense->date->format('Y-m'), fn (Expense $expense): string => $expense->date->format('F Y')),
+                'by_category' => $this->totals($expenses, fn (Expense $expense): string => $expense->category->name, fn (Expense $expense): string => $expense->category->name, byAmount: true),
             ],
             'mileage' => [
                 'miles' => $mileage->sum('miles'),
@@ -70,13 +70,13 @@ class BusinessReport
      * @param  Collection<int, mixed>  $items
      * @return list<array{label: string, amount_pence: int}>
      */
-    protected function totals(Collection $items, callable $key, callable $label, string $amountField, bool $byAmount = false): array
+    protected function totals(Collection $items, callable $key, callable $label, bool $byAmount = false): array
     {
         $groups = $items
             ->groupBy($key)
             ->map(fn (Collection $group): array => [
                 'label' => $label($group->first()),
-                'amount_pence' => (int) $group->sum($amountField),
+                'amount_pence' => (int) $group->sum('amount_pence'),
             ]);
 
         return ($byAmount ? $groups->sortByDesc('amount_pence') : $groups->sortKeys())->values()->all();
