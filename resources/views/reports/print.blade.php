@@ -11,8 +11,10 @@
         h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
         .report { display: block; }
         .report > p { margin: 0 0 1rem; color: #444; }
-        .report section { margin: 0 0 1.25rem; break-inside: avoid; }
-        .report h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
+        .report section { margin: 0 0 1.25rem; }
+        .report h3 { margin: 0 0 0.35rem; font-size: 1.05rem; break-after: avoid; }
+        .report thead { display: table-header-group; }
+        .report tr { break-inside: avoid; }
         .report table { width: 100%; border-collapse: collapse; }
         .report th { text-align: left; font-weight: 600; border-bottom: 2px solid #111; }
         .report th, .report td { padding: 0.3rem 0.4rem; border-bottom: 1px solid #ccc; }
