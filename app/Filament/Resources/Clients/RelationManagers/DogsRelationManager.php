@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Clients\RelationManagers;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -42,6 +43,7 @@ class DogsRelationManager extends RelationManager
                 CreateAction::make(),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ]);

@@ -6,6 +6,7 @@ use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\GiftCards\Pages\CreateGiftCard;
 use App\Filament\Resources\GiftCards\Pages\EditGiftCard;
 use App\Filament\Resources\GiftCards\Pages\ListGiftCards;
+use App\Filament\Resources\GiftCards\Pages\ViewGiftCard;
 use App\Filament\Resources\GiftCards\RelationManagers\RedemptionsRelationManager;
 use App\GiftCardType;
 use App\Models\Booking;
@@ -105,6 +106,27 @@ class GiftCardResourceTest extends TestCase
 
         Livewire::test(RedemptionsRelationManager::class, ['ownerRecord' => $card, 'pageClass' => EditGiftCard::class])
             ->assertCanSeeTableRecords([$mine]);
+    }
+
+    public function test_view_page_shows_the_card_details_and_a_preview_of_the_printed_card(): void
+    {
+        $card = GiftCard::factory()->create(['recipient_name' => 'Sam', 'purchaser_name' => 'Pat', 'value_pence' => 5000]);
+
+        Livewire::test(ViewGiftCard::class, ['record' => $card->getKey()])
+            ->assertSuccessful()
+            ->assertSee($card->code)
+            ->assertSee('Pat')
+            ->assertSee('£50.00 of £50.00')
+            ->assertSeeHtml('class="hendy-card"')
+            ->assertSee('A gift for');
+    }
+
+    public function test_view_page_previews_service_cards_with_their_lines(): void
+    {
+        $card = GiftCard::factory()->service()->create();
+
+        Livewire::test(ViewGiftCard::class, ['record' => $card->getKey()])
+            ->assertSee('1 × '.$card->lines()->first()->service->name);
     }
 
     public function test_print_page_shows_the_card_to_a_logged_in_user(): void
