@@ -99,6 +99,26 @@ class GiftCardResourceTest extends TestCase
             ->assertSee('£35.00 of £50.00');
     }
 
+    public function test_list_shows_status_and_can_filter_used_cards(): void
+    {
+        $used = GiftCard::factory()->create(['value_pence' => 1500]);
+        BookingClient::factory()->create(['price_pence' => 1500, 'gift_card_id' => $used->id]);
+        $available = GiftCard::factory()->create();
+        $expired = GiftCard::factory()->create(['expires_at' => today()->subDay()]);
+
+        Livewire::test(ListGiftCards::class)
+            ->assertCanSeeTableRecords([$used, $available, $expired])
+            ->filterTable('status', 'used')
+            ->assertCanSeeTableRecords([$used])
+            ->assertCanNotSeeTableRecords([$available, $expired])
+            ->filterTable('status', 'available')
+            ->assertCanSeeTableRecords([$available])
+            ->assertCanNotSeeTableRecords([$used, $expired])
+            ->filterTable('status', 'expired')
+            ->assertCanSeeTableRecords([$expired])
+            ->assertCanNotSeeTableRecords([$used, $available]);
+    }
+
     public function test_card_page_lists_its_redemptions(): void
     {
         $card = GiftCard::factory()->create();

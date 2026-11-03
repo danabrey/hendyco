@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\GiftCardStatus;
 use App\GiftCardType;
 use Database\Factories\GiftCardFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -85,6 +86,68 @@ class GiftCard extends Model
     public function redemptions(): HasMany
     {
         return $this->hasMany(GiftCardRedemption::class);
+    }
+
+    /**
+     * Whether nothing is left to redeem: a money card's balance is spent, or every service line is used up.
+     */
+    public function isUsed(): bool
+    {
+        if ($this->type === GiftCardType::Money) {
+            return $this->balancePence() === 0;
+        }
+
+        $lines = $this->lines()->get();
+
+        return $lines->isNotEmpty() && $lines->every(fn (GiftCardLine $line): bool => $this->remainingQuantityFor($line->service_id) === 0);
+    }
+
+    public function status(): GiftCardStatus
+    {
+        return match (true) {
+            $this->isUsed() => GiftCardStatus::Used,
+            $this->isExpired() => GiftCardStatus::Expired,
+            default => GiftCardStatus::Available,
+        };
+    }
+
+    /**
+     * Cards with nothing left to redeem.
+     *
+     * @param  Builder<GiftCard>  $query
+     */
+    public function scopeUsed(Builder $query): void
+    {
+        $query->where(fn (Builder $query) => $query
+            ->where(fn (Builder $money) => $money
+                ->where('type', GiftCardType::Money)
+                ->whereRaw('coalesce(gift_cards.value_pence, 0) - coalesce((select sum(amount_pence) from gift_card_redemptions where gift_card_redemptions.gift_card_id = gift_cards.id), 0) <= 0'))
+            ->orWhere(fn (Builder $service) => $service
+                ->where('type', GiftCardType::Service)
+                ->whereHas('lines')
+                ->whereDoesntHave('lines', fn (Builder $line) => $line
+                    ->whereRaw('gift_card_lines.quantity > (select count(*) from gift_card_redemptions where gift_card_redemptions.gift_card_id = gift_card_lines.gift_card_id and gift_card_redemptions.service_id = gift_card_lines.service_id)'))));
+    }
+
+    /**
+     * Cards past their expiry date that still had something left on them.
+     *
+     * @param  Builder<GiftCard>  $query
+     */
+    public function scopeExpired(Builder $query): void
+    {
+        $query->whereNotNull('expires_at')->where('expires_at', '<', today())->whereNot(fn (Builder $query) => $query->used());
+    }
+
+    /**
+     * Cards that can still be redeemed.
+     *
+     * @param  Builder<GiftCard>  $query
+     */
+    public function scopeAvailable(Builder $query): void
+    {
+        $query->whereNot(fn (Builder $query) => $query->used())
+            ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>=', today()));
     }
 
     public function isExpired(): bool

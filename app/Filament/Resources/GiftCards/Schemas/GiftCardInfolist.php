@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\GiftCards\Schemas;
 
+use App\GiftCardStatus;
 use App\Models\GiftCard;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
@@ -21,6 +22,9 @@ class GiftCardInfolist
                             ->copyable(),
                         TextEntry::make('type')
                             ->badge(),
+                        TextEntry::make('status')
+                            ->badge()
+                            ->state(fn (GiftCard $record): GiftCardStatus => $record->status()),
                         TextEntry::make('remaining')
                             ->label('Remaining')
                             ->state(fn (GiftCard $record): string => $record->remainingSummary()),
