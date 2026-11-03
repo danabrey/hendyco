@@ -123,6 +123,22 @@ class ClientResourceTest extends TestCase
         $this->assertSame('Renamed', $dog->fresh()->name);
     }
 
+    public function test_client_list_shows_each_dogs_name_and_can_search_by_dog(): void
+    {
+        $biscuit = Client::factory()->create();
+        Dog::factory()->for($biscuit)->create(['name' => 'Biscuit']);
+        Dog::factory()->for($biscuit)->create(['name' => 'Rex']);
+        $other = Client::factory()->create();
+        Dog::factory()->for($other)->create(['name' => 'Fido']);
+
+        Livewire::test(ListClients::class)
+            ->assertSee('Biscuit')
+            ->assertSee('Rex')
+            ->searchTable('Biscuit')
+            ->assertCanSeeTableRecords([$biscuit])
+            ->assertCanNotSeeTableRecords([$other]);
+    }
+
     public function test_archived_clients_are_hidden_by_default_but_keep_their_data(): void
     {
         $this->actingAs(User::factory()->create());
