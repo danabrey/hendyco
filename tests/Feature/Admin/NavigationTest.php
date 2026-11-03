@@ -16,8 +16,8 @@ class NavigationTest extends TestCase
 
         $this->get('/admin')->assertOk()->assertSeeInOrder([
             'Clients &amp; bookings', 'Clients', 'Bookings', 'Calendar', 'Gift Cards',
-            'Money', 'Expenses', 'Mileage Logs',
-            'Reports', 'UC report', 'Business reports',
+            'Expenses', 'Expenses', 'Mileage Logs',
+            'Reports', 'UC Report', 'Business Reports',
             'Settings', 'Services', 'Expense Categories',
         ], false);
     }

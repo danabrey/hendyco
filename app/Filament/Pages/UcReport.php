@@ -21,7 +21,7 @@ class UcReport extends Page
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'UC report';
+    protected static ?string $navigationLabel = 'UC Report';
 
     protected string $view = 'filament.pages.uc-report';
 
