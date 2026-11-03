@@ -6,6 +6,7 @@ use App\Filament\Resources\MileageLogs\Pages\ManageMileageLogs;
 use App\Filament\Tables\DateRangeFilter;
 use App\Models\Booking;
 use App\Models\MileageLog;
+use App\NavigationGroup;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -23,12 +24,17 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use UnitEnum;
 
 class MileageLogResource extends Resource
 {
     protected static ?string $model = MileageLog::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
+
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Money;
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'mileage log';
 

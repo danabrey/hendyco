@@ -6,6 +6,7 @@ use App\Filament\Forms\PenceInput;
 use App\Filament\Resources\Expenses\Pages\ManageExpenses;
 use App\Filament\Tables\DateRangeFilter;
 use App\Models\Expense;
+use App\NavigationGroup;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -26,12 +27,17 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\HtmlString;
+use UnitEnum;
 
 class ExpenseResource extends Resource
 {
     protected static ?string $model = Expense::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
+
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Money;
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {

@@ -9,6 +9,7 @@ use App\Filament\Resources\GiftCards\RelationManagers\RedemptionsRelationManager
 use App\Filament\Resources\GiftCards\Schemas\GiftCardForm;
 use App\Filament\Resources\GiftCards\Tables\GiftCardsTable;
 use App\Models\GiftCard;
+use App\NavigationGroup;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,12 +17,17 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use UnitEnum;
 
 class GiftCardResource extends Resource
 {
     protected static ?string $model = GiftCard::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
+
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::ClientsAndBookings;
+
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $recordTitleAttribute = 'code';
 
