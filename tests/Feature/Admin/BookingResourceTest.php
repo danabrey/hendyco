@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Filament\Resources\Bookings\Pages\CreateBooking;
 use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\Bookings\Pages\ListBookings;
+use App\Filament\Resources\Bookings\Pages\ViewBooking;
 use App\Filament\Resources\Clients\Pages\ViewClient;
 use App\Filament\Resources\Clients\RelationManagers\BookingRowsRelationManager;
 use App\Models\Booking;
@@ -156,6 +157,18 @@ class BookingResourceTest extends TestCase
         $row->refresh();
         $this->assertSame(1000, $row->price_pence);
         $this->assertSame(PaymentMethod::BankTransfer, $row->payment_method);
+    }
+
+    public function test_user_can_view_a_booking_with_its_client_rows(): void
+    {
+        $booking = Booking::factory()->create();
+        $row = BookingClient::factory()->for($booking)->create(['price_pence' => 1500]);
+
+        Livewire::test(ViewBooking::class, ['record' => $booking->getKey()])
+            ->assertSuccessful()
+            ->assertSee($row->client->name)
+            ->assertSee('£15.00')
+            ->assertSee('Unpaid');
     }
 
     public function test_deleting_a_booking_soft_deletes_it(): void
