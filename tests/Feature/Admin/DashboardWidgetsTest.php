@@ -58,6 +58,16 @@ class DashboardWidgetsTest extends TestCase
             ->assertDontSee('£99.99');
     }
 
+    public function test_owed_stat_ignores_free_rows(): void
+    {
+        $this->row(0, null);
+        $this->row(1200, null);
+
+        Livewire::test(BusinessStatsWidget::class)
+            ->assertSee('1 unpaid booking')
+            ->assertDontSee('2 unpaid');
+    }
+
     public function test_upcoming_bookings_shows_the_next_seven_days_in_order_with_dogs(): void
     {
         $today = Booking::factory()->create(['date' => '2026-11-10', 'start_time' => '14:00']);

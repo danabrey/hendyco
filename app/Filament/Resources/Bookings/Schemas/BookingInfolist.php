@@ -49,7 +49,7 @@ class BookingInfolist
                         TextEntry::make('paid_at')
                             ->label('Paid on')
                             ->date()
-                            ->placeholder(fn (BookingClient $record): string => $record->isCoveredByGiftCard() ? 'Paid by gift card' : 'Unpaid'),
+                            ->placeholder(fn (BookingClient $record): string => $record->paidOnPlaceholder()),
                         TextEntry::make('payment_method')
                             ->placeholder('-'),
                     ]),

@@ -248,6 +248,24 @@ class BookingResourceTest extends TestCase
             ->assertCanNotSeeTableRecords([$paid, $cardCovered]);
     }
 
+    public function test_free_rows_are_not_unpaid_and_say_no_charge(): void
+    {
+        $free = Booking::factory()->has(BookingClient::factory()->state(['price_pence' => 0]), 'clientRows')->create();
+        $owing = Booking::factory()->has(BookingClient::factory()->state(['price_pence' => 1000]), 'clientRows')->create();
+
+        $this->assertSame(0, BookingClient::unpaid()->where('booking_id', $free->id)->count());
+        $this->assertSame(1, BookingClient::unpaid()->where('booking_id', $owing->id)->count());
+
+        Livewire::test(ListBookings::class)
+            ->filterTable('unpaid')
+            ->assertCanSeeTableRecords([$owing])
+            ->assertCanNotSeeTableRecords([$free]);
+
+        Livewire::test(ViewBooking::class, ['record' => $free->getKey()])
+            ->assertSee('No charge')
+            ->assertDontSee('Unpaid');
+    }
+
     public function test_client_page_lists_that_clients_bookings(): void
     {
         $client = Client::factory()->create();
