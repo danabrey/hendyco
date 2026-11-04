@@ -41,6 +41,7 @@ COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 EXPOSE 80
 
