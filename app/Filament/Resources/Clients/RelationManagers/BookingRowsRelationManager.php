@@ -33,7 +33,7 @@ class BookingRowsRelationManager extends RelationManager
                 TextColumn::make('paid_at')
                     ->label('Paid on')
                     ->date()
-                    ->placeholder(fn (BookingClient $record): string => $record->isCoveredByGiftCard() ? 'Paid by gift card' : 'Unpaid'),
+                    ->placeholder(fn (BookingClient $record): string => $record->paidOnPlaceholder()),
                 TextColumn::make('payment_method'),
             ])
             ->modifyQueryUsing(fn ($query) => $query->whereHas('booking'))

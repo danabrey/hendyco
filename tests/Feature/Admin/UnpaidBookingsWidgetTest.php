@@ -51,6 +51,16 @@ class UnpaidBookingsWidgetTest extends TestCase
             ->assertCanNotSeeTableRecords([$paid, $covered, $onDeleted]);
     }
 
+    public function test_it_excludes_free_rows(): void
+    {
+        $free = BookingClient::factory()->create(['price_pence' => 0]);
+        $owing = BookingClient::factory()->create(['price_pence' => 1000]);
+
+        Livewire::test(UnpaidBookingsWidget::class)
+            ->assertCanSeeTableRecords([$owing])
+            ->assertCanNotSeeTableRecords([$free]);
+    }
+
     public function test_a_partly_card_covered_row_shows_only_the_remainder(): void
     {
         $card = GiftCard::factory()->create(['value_pence' => 1000]);

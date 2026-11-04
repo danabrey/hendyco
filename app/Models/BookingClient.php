@@ -101,6 +101,18 @@ class BookingClient extends Model
         return max(0, $this->price_pence - (int) $this->giftCardRedemption?->amount_pence);
     }
 
+    /**
+     * What to show in place of a paid-on date when there isn't one.
+     */
+    public function paidOnPlaceholder(): string
+    {
+        return match (true) {
+            $this->price_pence === 0 => 'No charge',
+            $this->isCoveredByGiftCard() => 'Paid by gift card',
+            default => 'Unpaid',
+        };
+    }
+
     public function isCoveredByGiftCard(): bool
     {
         return $this->payment_method === PaymentMethod::GiftCard;
@@ -111,7 +123,8 @@ class BookingClient extends Model
      */
     public function scopeUnpaid(Builder $query): void
     {
-        $query->whereNull('paid_at')
+        $query->where('price_pence', '>', 0)
+            ->whereNull('paid_at')
             ->where(fn (Builder $query) => $query
                 ->whereNull('payment_method')
                 ->orWhere('payment_method', '!=', PaymentMethod::GiftCard));
