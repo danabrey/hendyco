@@ -372,6 +372,18 @@ class BookingResourceTest extends TestCase
             ->assertSee('Unpaid');
     }
 
+    public function test_view_page_labels_the_service_dogs_and_duration(): void
+    {
+        $booking = Booking::factory()
+            ->for(Service::factory()->state(['name' => 'Solo walk']))
+            ->hasAttached(Dog::factory()->state(['name' => 'Biscuit']))
+            ->create(['duration_minutes' => 45]);
+
+        Livewire::test(ViewBooking::class, ['record' => $booking->getKey()])
+            ->assertSeeInOrder(['Duration', '45 min', 'Service', 'Solo walk', 'Dogs', 'Biscuit'])
+            ->assertDontSee('Duration minutes');
+    }
+
     public function test_view_page_shows_gift_card_rows_as_paid(): void
     {
         $booking = Booking::factory()->create();

@@ -20,6 +20,11 @@ class BookingsCalendarWidget extends CalendarWidget
     protected bool $eventClickEnabled = true;
 
     /**
+     * British formatting, so times show as 24-hour like the rest of the admin.
+     */
+    protected ?string $locale = 'en-GB';
+
+    /**
      * @var array<string, mixed>
      */
     protected array $options = [

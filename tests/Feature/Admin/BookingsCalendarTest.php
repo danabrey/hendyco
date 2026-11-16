@@ -64,4 +64,11 @@ class BookingsCalendarTest extends TestCase
             ->call('onDateClickJs', ['date' => '2026-11-12T00:00:00.000Z', 'allDay' => true, 'view' => ['type' => 'dayGridMonth', 'title' => '', 'activeStart' => '2026-11-01T00:00:00.000Z', 'activeEnd' => '2026-12-01T00:00:00.000Z', 'currentStart' => '2026-11-01T00:00:00.000Z', 'currentEnd' => '2026-12-01T00:00:00.000Z'], 'tzOffset' => 0])
             ->assertRedirect('/admin/bookings/create?date=2026-11-12');
     }
+
+    public function test_calendar_formats_dates_and_times_the_uk_way(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->assertSame('en-GB', Livewire::test(BookingsCalendarWidget::class)->instance()->getLocale());
+    }
 }
