@@ -210,6 +210,20 @@ class BookingResourceTest extends TestCase
             ->assertFormSet(fn (array $state) => $this->assertEquals(16.5, collect($state['clientRows'])->sole()['price_pence']));
     }
 
+    public function test_a_saved_price_that_differs_from_the_suggestion_is_kept_on_an_existing_booking(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $client = Client::factory()->create();
+        [$rex, $fido, $max] = Dog::factory()->for($client)->count(3)->create();
+        $booking = Booking::factory()->for($walk)->create();
+        $booking->dogs()->attach([$rex->id, $fido->id]);
+        BookingClient::factory()->for($booking)->for($client)->create(['price_pence' => 1650]);
+
+        Livewire::test(EditBooking::class, ['record' => $booking->getRouteKey()])
+            ->set('data.dogs', [$rex->id, $fido->id, $max->id])
+            ->assertFormSet(fn (array $state) => $this->assertEquals(16.5, collect($state['clientRows'])->sole()['price_pence']));
+    }
+
     public function test_a_hand_typed_price_is_kept_when_dogs_or_service_change(): void
     {
         $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);

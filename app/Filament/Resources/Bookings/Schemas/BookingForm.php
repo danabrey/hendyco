@@ -45,21 +45,21 @@ class BookingForm
                     ->required()
                     ->live()
                     ->afterStateUpdated(function (Set $set, Get $get, mixed $state, mixed $old): void {
-                        static::repriceRowsForService($set, $get, $old, $state);
+                        static::refreshPrices($get, $set);
                         static::applyDefaultDuration($set, $get, $old, $state);
                     }),
                 Select::make('dogs')
                     ->relationship('dogs', 'name', fn (Builder $query) => $query->with('client'))
                     ->live()
-                    ->afterStateHydrated(fn (Set $set, ?array $state) => $set('priced_dog_ids', $state ?? []))
-                    ->afterStateUpdated(fn (Set $set, Get $get) => static::syncRowsWithDogs($set, $get))
+                    ->afterStateUpdated(function (Get $get, Set $set): void {
+                        static::addRowsForDogClients($get, $set);
+                        static::refreshPrices($get, $set);
+                    })
                     ->getOptionLabelFromRecordUsing(fn (Dog $record): string => "{$record->name} ({$record->client->name})")
                     ->multiple()
                     ->preload()
                     ->searchable()
                     ->columnSpanFull(),
-                Hidden::make('priced_dog_ids')
-                    ->dehydrated(false),
                 TextInput::make('miles')
                     ->label('Mileage')
                     ->numeric()
@@ -74,6 +74,7 @@ class BookingForm
                     ->columns(4)
                     ->defaultItems(0)
                     ->addActionLabel('Add client')
+                    ->afterStateUpdated(fn (Get $get, Set $set) => static::refreshPrices($get, $set))
                     ->schema([
                         Select::make('client_id')
                             ->relationship('client', 'name')
@@ -82,12 +83,10 @@ class BookingForm
                             ->preload()
                             ->distinct()
                             ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                            ->live()
-                            ->afterStateUpdated(fn (Set $set, Get $get, mixed $state, mixed $old) => static::repriceRowForClient($set, $get, $old, $state)),
+                            ->live(),
                         PenceInput::make('price_pence')
                             ->label('Price')
-                            ->required()
-                            ->default(fn (Get $get): int => SuggestedPrices::for($get('../../service_id'), $get('../../dogs') ?? [])->forClient($get('client_id'))),
+                            ->required(),
                         DatePicker::make('paid_at')
                             ->label('Paid on'),
                         Select::make('payment_method')
@@ -105,6 +104,9 @@ class BookingForm
                             ->required(fn (Get $get): bool => static::isGiftCardMethod($get('payment_method')))
                             ->rule(fn (Get $get, ?BookingClient $record): Closure => static::giftCardRule($get, $record)),
                     ]),
+                Hidden::make('suggested_prices')
+                    ->dehydrated(false)
+                    ->afterStateHydrated(fn (Get $get, Set $set) => $set('suggested_prices', ClientRowPrices::suggestionsFor($get('clientRows') ?? [], static::suggestedPrices($get)))),
             ]);
     }
 
@@ -157,37 +159,36 @@ class BookingForm
     }
 
     /**
-     * When the dogs change, re-price rows still at their old suggested price, then add a
-     * price row for every client whose dog is on the booking and who has no row yet.
-     *
-     * The dogs the rows were last priced for are kept in `priced_dog_ids`, because the select's
-     * own old state is not reliable when its array is updated one element at a time.
+     * The price each client would be charged for the booking's current service and dogs.
      */
-    protected static function syncRowsWithDogs(Set $set, Get $get): void
+    protected static function suggestedPrices(Get $get): SuggestedPrices
     {
-        $serviceId = $get('service_id');
-        $dogIds = $get('dogs') ?? [];
-        $newPrices = SuggestedPrices::for($serviceId, $dogIds);
-
-        static::repriceUnchangedRows($set, $get, SuggestedPrices::for($serviceId, $get('priced_dog_ids') ?? []), $newPrices);
-        static::addRowsForDogClients($set, $get, $newPrices);
-
-        $set('priced_dog_ids', $dogIds);
+        return SuggestedPrices::for($get('service_id'), $get('dogs') ?? []);
     }
 
     /**
-     * Add a price row for every client whose dog is on the booking and who has no row yet.
+     * Give every client row its suggested price, leaving prices typed in by hand alone.
      */
-    protected static function addRowsForDogClients(Set $set, Get $get, SuggestedPrices $prices): void
+    protected static function refreshPrices(Get $get, Set $set): void
+    {
+        $refreshed = ClientRowPrices::refresh($get('clientRows') ?? [], $get('suggested_prices') ?? [], static::suggestedPrices($get));
+
+        $set('clientRows', $refreshed['rows']);
+        $set('suggested_prices', $refreshed['suggested']);
+    }
+
+    /**
+     * Add an unpriced row for every client whose dog is on the booking and who has no row yet.
+     */
+    protected static function addRowsForDogClients(Get $get, Set $set): void
     {
         $rows = $get('clientRows') ?? [];
         $haveClientIds = collect($rows)->pluck('client_id')->filter();
 
-        collect($prices->clientIds())
+        collect(static::suggestedPrices($get)->clientIds())
             ->diff($haveClientIds)
-            ->each(function (int $clientId) use (&$rows, $prices): void {
-                $price = PenceInput::toPounds($prices->forClient($clientId));
-                $rows[(string) Str::uuid()] = ['client_id' => $clientId, 'price_pence' => $price, 'paid_at' => null, 'payment_method' => null];
+            ->each(function (int $clientId) use (&$rows): void {
+                $rows[(string) Str::uuid()] = ['client_id' => $clientId, 'price_pence' => null, 'paid_at' => null, 'payment_method' => null];
             });
 
         $set('clientRows', $rows);
@@ -205,50 +206,5 @@ class BookingForm
         if (blank($current) || (int) $current === (int) $oldDefault) {
             $set('duration_minutes', $newDefault);
         }
-    }
-
-    /**
-     * When the service changes, move rows still at the old service's suggested price to the new one's.
-     */
-    protected static function repriceRowsForService(Set $set, Get $get, mixed $oldServiceId, mixed $newServiceId): void
-    {
-        $dogIds = $get('dogs') ?? [];
-
-        static::repriceUnchangedRows($set, $get, SuggestedPrices::for($oldServiceId, $dogIds), SuggestedPrices::for($newServiceId, $dogIds));
-    }
-
-    /**
-     * When a row's client changes, move its price from the old client's suggested price to the new one's.
-     */
-    protected static function repriceRowForClient(Set $set, Get $get, mixed $oldClientId, mixed $newClientId): void
-    {
-        $prices = SuggestedPrices::for($get('../../service_id'), $get('../../dogs') ?? []);
-
-        if (static::isAtPrice($get('price_pence'), $prices->forClient($oldClientId))) {
-            $set('price_pence', PenceInput::toPounds($prices->forClient($newClientId)));
-        }
-    }
-
-    /**
-     * Move every row whose price still equals its old suggested price to its new suggested price,
-     * leaving prices typed in by hand alone.
-     */
-    protected static function repriceUnchangedRows(Set $set, Get $get, SuggestedPrices $oldPrices, SuggestedPrices $newPrices): void
-    {
-        foreach ($get('clientRows') ?? [] as $key => $row) {
-            $clientId = $row['client_id'] ?? null;
-
-            if (static::isAtPrice($row['price_pence'] ?? null, $oldPrices->forClient($clientId))) {
-                $set("clientRows.{$key}.price_pence", PenceInput::toPounds($newPrices->forClient($clientId)));
-            }
-        }
-    }
-
-    /**
-     * Whether a price typed into the form, in pounds, equals the given pence.
-     */
-    protected static function isAtPrice(mixed $pounds, int $pence): bool
-    {
-        return is_numeric($pounds) && PenceInput::toPence($pounds) === $pence;
     }
 }
