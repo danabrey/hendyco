@@ -69,7 +69,7 @@ class DemoDataSeeder extends Seeder
 
             BookingClient::factory()->for($booking)->create([
                 'client_id' => $clientId,
-                'price_pence' => $service->default_price_pence + $service->extra_dog_price_pence * ($dogCount - 1),
+                'price_pence' => $service->priceForDogCount($dogCount),
                 'paid_at' => $paid && $method !== PaymentMethod::GiftCard ? $date->copy()->addDays(fake()->numberBetween(0, 5))->min(today())->toDateString() : null,
                 'payment_method' => $paid ? $method : null,
             ]);
