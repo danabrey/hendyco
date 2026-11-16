@@ -188,7 +188,7 @@ class BookingForm
         collect(static::suggestedPrices($get)->clientIds())
             ->diff($haveClientIds)
             ->each(function (int $clientId) use (&$rows): void {
-                $rows[(string) Str::uuid()] = ['client_id' => $clientId, 'price_pence' => null, 'paid_at' => null, 'payment_method' => null];
+                $rows[(string) Str::uuid()] = ['client_id' => $clientId, 'price_pence' => null, 'paid_at' => null, 'payment_method' => null, 'gift_card_id' => null];
             });
 
         $set('clientRows', $rows);

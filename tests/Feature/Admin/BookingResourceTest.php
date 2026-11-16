@@ -110,6 +110,26 @@ class BookingResourceTest extends TestCase
             });
     }
 
+    public function test_rows_added_from_dogs_have_the_same_fields_as_rows_added_by_hand(): void
+    {
+        $service = Service::factory()->create();
+        $dog = Dog::factory()->create();
+
+        $component = Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $service->id])
+            ->callFormComponentAction('clientRows', 'add');
+
+        $handRowFields = array_keys(collect($component->get('data.clientRows'))->sole());
+
+        $component
+            ->set('data.clientRows', [])
+            ->fillForm(['dogs' => [$dog->id]]);
+
+        $dogRowFields = array_keys(collect($component->get('data.clientRows'))->sole());
+
+        $this->assertEqualsCanonicalizing($handRowFields, $dogRowFields);
+    }
+
     public function test_two_dogs_from_one_client_add_the_extra_dog_price_to_their_row(): void
     {
         $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
