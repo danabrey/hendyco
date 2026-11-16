@@ -13,6 +13,9 @@
 
         <title>{{ $title }} &middot; Hendy &amp; Co</title>
 
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+
         @fonts
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
