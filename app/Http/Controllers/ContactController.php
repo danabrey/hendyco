@@ -10,9 +10,17 @@ use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
+    /**
+     * Save the enquiry and email it to the business inbox. A filled-in `website` field is a
+     * honeypot only bots see, so those submissions are thanked but dropped.
+     */
     public function store(StoreEnquiryRequest $request): JsonResponse
     {
-        $enquiry = Enquiry::create($request->validated());
+        if ($request->filled('website')) {
+            return $this->thanks();
+        }
+
+        $enquiry = Enquiry::create($request->safe()->except('website'));
 
         try {
             Mail::to(config('mail.from.address'))->send(new NewEnquiryReceived($enquiry));
@@ -20,6 +28,11 @@ class ContactController extends Controller
             report($e);
         }
 
+        return $this->thanks();
+    }
+
+    protected function thanks(): JsonResponse
+    {
         return response()->json([
             'message' => "Thanks! We'll be in touch soon.",
         ], 201);
