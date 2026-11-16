@@ -40,6 +40,11 @@ class ServiceResource extends Resource
                 PenceInput::make('default_price_pence')
                     ->label('Default price')
                     ->required(),
+                PenceInput::make('extra_dog_price_pence')
+                    ->label('Extra dog price')
+                    ->helperText('Added for each extra dog from the same household.')
+                    ->default(0)
+                    ->required(),
                 TextInput::make('default_duration_minutes')
                     ->label('Default duration (minutes)')
                     ->numeric()
@@ -58,6 +63,9 @@ class ServiceResource extends Resource
                     ->sortable(),
                 TextColumn::make('default_price_pence')
                     ->label('Default price')
+                    ->money('GBP', divideBy: 100),
+                TextColumn::make('extra_dog_price_pence')
+                    ->label('Extra dog')
                     ->money('GBP', divideBy: 100),
                 TextColumn::make('default_duration_minutes')
                     ->label('Default duration')

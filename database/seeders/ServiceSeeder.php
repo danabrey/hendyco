@@ -12,6 +12,6 @@ class ServiceSeeder extends Seeder
      */
     public function run(): void
     {
-        Service::firstOrCreate(['name' => 'Meet & Greet'], ['default_price_pence' => 0]);
+        Service::firstOrCreate(['name' => 'Meet & Greet'], ['default_price_pence' => 0, 'extra_dog_price_pence' => 0]);
     }
 }

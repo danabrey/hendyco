@@ -20,6 +20,7 @@ class ServiceFactory extends Factory
         return [
             'name' => fake()->unique()->words(2, true),
             'default_price_pence' => fake()->randomElement([1000, 1200, 1500, 2000]),
+            'extra_dog_price_pence' => 0,
         ];
     }
 }

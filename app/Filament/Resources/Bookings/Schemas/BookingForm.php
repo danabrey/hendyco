@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Closure;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -43,14 +44,17 @@ class BookingForm
                     ->relationship('service', 'name')
                     ->required()
                     ->live()
-                    ->afterStateUpdated(function (Set $set, Get $get, $state, $old): void {
-                        static::repriceUnchangedRows($set, $get, $old, $state);
+                    ->afterStateUpdated(function (Set $set, Get $get, mixed $state, mixed $old): void {
+                        static::refreshPrices($get, $set);
                         static::applyDefaultDuration($set, $get, $old, $state);
                     }),
                 Select::make('dogs')
                     ->relationship('dogs', 'name', fn (Builder $query) => $query->with('client'))
                     ->live()
-                    ->afterStateUpdated(fn (Set $set, Get $get) => static::addRowsForDogClients($set, $get))
+                    ->afterStateUpdated(function (Get $get, Set $set): void {
+                        static::addRowsForDogClients($get, $set);
+                        static::refreshPrices($get, $set);
+                    })
                     ->getOptionLabelFromRecordUsing(fn (Dog $record): string => "{$record->name} ({$record->client->name})")
                     ->multiple()
                     ->preload()
@@ -70,6 +74,7 @@ class BookingForm
                     ->columns(4)
                     ->defaultItems(0)
                     ->addActionLabel('Add client')
+                    ->afterStateUpdated(fn (Get $get, Set $set) => static::refreshPrices($get, $set))
                     ->schema([
                         Select::make('client_id')
                             ->relationship('client', 'name')
@@ -77,11 +82,11 @@ class BookingForm
                             ->searchable()
                             ->preload()
                             ->distinct()
-                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->live(),
                         PenceInput::make('price_pence')
                             ->label('Price')
-                            ->required()
-                            ->default(fn (Get $get): int => static::defaultPricePence($get('../../service_id'))),
+                            ->required(),
                         DatePicker::make('paid_at')
                             ->label('Paid on'),
                         Select::make('payment_method')
@@ -99,6 +104,9 @@ class BookingForm
                             ->required(fn (Get $get): bool => static::isGiftCardMethod($get('payment_method')))
                             ->rule(fn (Get $get, ?BookingClient $record): Closure => static::giftCardRule($get, $record)),
                     ]),
+                Hidden::make('suggested_prices')
+                    ->dehydrated(false)
+                    ->afterStateHydrated(fn (Get $get, Set $set) => $set('suggested_prices', ClientRowPrices::suggestionsFor($get('clientRows') ?? [], static::suggestedPrices($get)))),
             ]);
     }
 
@@ -150,26 +158,37 @@ class BookingForm
         }
     }
 
-    protected static function defaultPricePence(mixed $serviceId): int
+    /**
+     * The price each client would be charged for the booking's current service and dogs.
+     */
+    protected static function suggestedPrices(Get $get): SuggestedPrices
     {
-        return $serviceId ? (int) Service::whereKey($serviceId)->value('default_price_pence') : 0;
+        return SuggestedPrices::for($get('service_id'), $get('dogs') ?? []);
     }
 
     /**
-     * Add a price row for every client whose dog is on the booking and who has no row yet.
+     * Give every client row its suggested price, leaving prices typed in by hand alone.
      */
-    protected static function addRowsForDogClients(Set $set, Get $get): void
+    protected static function refreshPrices(Get $get, Set $set): void
+    {
+        $refreshed = ClientRowPrices::refresh($get('clientRows') ?? [], $get('suggested_prices') ?? [], static::suggestedPrices($get));
+
+        $set('clientRows', $refreshed['rows']);
+        $set('suggested_prices', $refreshed['suggested']);
+    }
+
+    /**
+     * Add an unpriced row for every client whose dog is on the booking and who has no row yet.
+     */
+    protected static function addRowsForDogClients(Get $get, Set $set): void
     {
         $rows = $get('clientRows') ?? [];
         $haveClientIds = collect($rows)->pluck('client_id')->filter();
-        $price = static::defaultPricePence($get('service_id')) / 100;
 
-        Dog::whereIn('id', $get('dogs') ?? [])
-            ->pluck('client_id')
-            ->unique()
+        collect(static::suggestedPrices($get)->clientIds())
             ->diff($haveClientIds)
-            ->each(function (int $clientId) use (&$rows, $price): void {
-                $rows[(string) Str::uuid()] = ['client_id' => $clientId, 'price_pence' => $price, 'paid_at' => null, 'payment_method' => null];
+            ->each(function (int $clientId) use (&$rows): void {
+                $rows[(string) Str::uuid()] = ['client_id' => $clientId, 'price_pence' => null, 'paid_at' => null, 'payment_method' => null];
             });
 
         $set('clientRows', $rows);
@@ -186,21 +205,6 @@ class BookingForm
 
         if (blank($current) || (int) $current === (int) $oldDefault) {
             $set('duration_minutes', $newDefault);
-        }
-    }
-
-    /**
-     * When the service changes, move rows still at the old default to the new default.
-     */
-    protected static function repriceUnchangedRows(Set $set, Get $get, mixed $oldServiceId, mixed $newServiceId): void
-    {
-        $old = static::defaultPricePence($oldServiceId) / 100;
-        $new = static::defaultPricePence($newServiceId) / 100;
-
-        foreach (array_keys($get('clientRows') ?? []) as $key) {
-            if ((float) $get("clientRows.{$key}.price_pence") === (float) $old) {
-                $set("clientRows.{$key}.price_pence", $new);
-            }
         }
     }
 }

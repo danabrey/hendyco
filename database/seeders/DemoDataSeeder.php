@@ -24,10 +24,10 @@ class DemoDataSeeder extends Seeder
         $this->call([ServiceSeeder::class, ExpenseCategorySeeder::class]);
 
         $services = collect([
-            ['Group walk', 1200],
-            ['Solo walk', 1800],
-            ['Drop-in visit', 1000],
-        ])->map(fn (array $service): Service => Service::firstOrCreate(['name' => $service[0]], ['default_price_pence' => $service[1]]));
+            ['Group walk', 1200, 300],
+            ['Solo walk', 1800, 300],
+            ['Drop-in visit', 1000, 300],
+        ])->map(fn (array $service): Service => Service::firstOrCreate(['name' => $service[0]], ['default_price_pence' => $service[1], 'extra_dog_price_pence' => $service[2]]));
 
         $dogs = Client::factory(14)->create()->flatMap(
             fn (Client $client) => Dog::factory(fake()->numberBetween(1, 2))->for($client)->create()
@@ -62,14 +62,14 @@ class DemoDataSeeder extends Seeder
         ]);
         $booking->dogs()->attach($dogs->pluck('id'));
 
-        $dogs->pluck('client_id')->unique()->each(function (int $clientId) use ($booking, $service, $date): void {
+        $dogs->countBy('client_id')->each(function (int $dogCount, int $clientId) use ($booking, $service, $date): void {
             $isPast = $date->isPast();
             $paid = $isPast && fake()->boolean(80);
             $method = fake()->randomElement([PaymentMethod::Cash, PaymentMethod::BankTransfer, PaymentMethod::BankTransfer, PaymentMethod::GiftCard]);
 
             BookingClient::factory()->for($booking)->create([
                 'client_id' => $clientId,
-                'price_pence' => $service->default_price_pence,
+                'price_pence' => $service->priceForDogCount($dogCount),
                 'paid_at' => $paid && $method !== PaymentMethod::GiftCard ? $date->copy()->addDays(fake()->numberBetween(0, 5))->min(today())->toDateString() : null,
                 'payment_method' => $paid ? $method : null,
             ]);

@@ -110,6 +110,153 @@ class BookingResourceTest extends TestCase
             });
     }
 
+    public function test_two_dogs_from_one_client_add_the_extra_dog_price_to_their_row(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $client = Client::factory()->create();
+        $dogs = Dog::factory()->for($client)->count(2)->create();
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => $dogs->modelKeys()])
+            ->assertFormSet(function (array $state) use ($client) {
+                $row = collect($state['clientRows'])->sole();
+                $this->assertSame($client->id, $row['client_id']);
+                $this->assertEquals(19.5, $row['price_pence']);
+            });
+    }
+
+    public function test_two_dogs_from_one_client_are_charged_the_base_price_when_the_service_has_no_extra_dog_price(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 0]);
+        $client = Client::factory()->create();
+        $dogs = Dog::factory()->for($client)->count(2)->create();
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => $dogs->modelKeys()])
+            ->assertFormSet(function (array $state) use ($client) {
+                $row = collect($state['clientRows'])->sole();
+                $this->assertSame($client->id, $row['client_id']);
+                $this->assertEquals(16.5, $row['price_pence']);
+            });
+    }
+
+    public function test_dogs_from_different_clients_are_each_charged_the_base_price(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $dogs = Dog::factory()->count(2)->create();
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => $dogs->modelKeys()])
+            ->assertFormSet(fn (array $state) => $this->assertEquals([16.5, 16.5], collect($state['clientRows'])->pluck('price_pence')->all()));
+    }
+
+    public function test_three_dogs_from_one_client_add_the_extra_dog_price_twice(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $dogs = Dog::factory()->for(Client::factory())->count(3)->create();
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => $dogs->modelKeys()])
+            ->assertFormSet(fn (array $state) => $this->assertEquals(22.5, collect($state['clientRows'])->sole()['price_pence']));
+    }
+
+    public function test_removing_one_of_a_clients_two_dogs_drops_their_row_back_to_the_base_price(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        [$rex, $fido] = Dog::factory()->for(Client::factory())->count(2)->create();
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => [$rex->id, $fido->id]])
+            ->set('data.dogs', [$rex->id])
+            ->assertFormSet(fn (array $state) => $this->assertEquals(16.5, collect($state['clientRows'])->sole()['price_pence']));
+    }
+
+    public function test_a_client_row_added_by_hand_is_priced_for_that_clients_dogs_on_the_booking(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $client = Client::factory()->create();
+        $dogs = Dog::factory()->for($client)->count(2)->create();
+
+        $component = Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => $dogs->modelKeys()])
+            ->set('data.clientRows', [])
+            ->callFormComponentAction('clientRows', 'add');
+
+        $rowKey = array_key_first($component->get('data.clientRows'));
+
+        $component
+            ->assertSet("data.clientRows.{$rowKey}.price_pence", 16.5)
+            ->set("data.clientRows.{$rowKey}.client_id", $client->id)
+            ->assertSet("data.clientRows.{$rowKey}.price_pence", 19.5);
+    }
+
+    public function test_removing_a_dog_on_an_existing_booking_drops_the_unedited_price(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $client = Client::factory()->create();
+        [$rex, $fido] = Dog::factory()->for($client)->count(2)->create();
+        $booking = Booking::factory()->for($walk)->create();
+        $booking->dogs()->attach([$rex->id, $fido->id]);
+        BookingClient::factory()->for($booking)->for($client)->create(['price_pence' => 1950]);
+
+        Livewire::test(EditBooking::class, ['record' => $booking->getRouteKey()])
+            ->set('data.dogs', [$rex->id])
+            ->assertFormSet(fn (array $state) => $this->assertEquals(16.5, collect($state['clientRows'])->sole()['price_pence']));
+    }
+
+    public function test_a_saved_price_that_differs_from_the_suggestion_is_kept_on_an_existing_booking(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $client = Client::factory()->create();
+        [$rex, $fido, $max] = Dog::factory()->for($client)->count(3)->create();
+        $booking = Booking::factory()->for($walk)->create();
+        $booking->dogs()->attach([$rex->id, $fido->id]);
+        BookingClient::factory()->for($booking)->for($client)->create(['price_pence' => 1650]);
+
+        Livewire::test(EditBooking::class, ['record' => $booking->getRouteKey()])
+            ->set('data.dogs', [$rex->id, $fido->id, $max->id])
+            ->assertFormSet(fn (array $state) => $this->assertEquals(16.5, collect($state['clientRows'])->sole()['price_pence']));
+    }
+
+    public function test_a_hand_typed_price_is_kept_when_dogs_or_service_change(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $visit = Service::factory()->create(['default_price_pence' => 1200, 'extra_dog_price_pence' => 300]);
+        [$rex, $fido] = Dog::factory()->for(Client::factory())->count(2)->create();
+
+        $component = Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => [$rex->id]]);
+
+        $rowKey = array_key_first($component->get('data.clientRows'));
+
+        $component
+            ->set("data.clientRows.{$rowKey}.price_pence", 10)
+            ->fillForm(['dogs' => [$rex->id, $fido->id]])
+            ->assertSet("data.clientRows.{$rowKey}.price_pence", 10)
+            ->fillForm(['service_id' => $visit->id])
+            ->assertSet("data.clientRows.{$rowKey}.price_pence", 10);
+    }
+
+    public function test_changing_the_service_reprices_unedited_rows_with_the_current_dog_count(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
+        $visit = Service::factory()->create(['default_price_pence' => 1200, 'extra_dog_price_pence' => 250]);
+        $dogs = Dog::factory()->for(Client::factory())->count(2)->create();
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => $dogs->modelKeys()])
+            ->fillForm(['service_id' => $visit->id])
+            ->assertFormSet(fn (array $state) => $this->assertEquals(14.5, collect($state['clientRows'])->sole()['price_pence']));
+    }
+
     public function test_changing_the_service_reprices_rows_still_at_the_old_default(): void
     {
         $old = Service::factory()->create(['default_price_pence' => 1000]);
