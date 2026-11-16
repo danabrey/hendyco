@@ -12,6 +12,7 @@ const form = reactive({
     email: '',
     phone: '',
     message: '',
+    website: '',
 });
 
 const submitting = ref(false);
@@ -53,6 +54,7 @@ async function submit() {
         form.email = '';
         form.phone = '';
         form.message = '';
+        form.website = '';
     } catch {
         errors.value = { general: ['Something went wrong. Please try again or call/email directly.'] };
     } finally {
@@ -63,6 +65,11 @@ async function submit() {
 
 <template>
     <form v-if="!succeeded" class="space-y-4" @submit.prevent="submit">
+        <div class="hidden" aria-hidden="true">
+            <label for="website">Leave this field empty</label>
+            <input id="website" v-model="form.website" type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
                 <label for="name" class="block text-sm font-medium text-brand-navy">Name</label>

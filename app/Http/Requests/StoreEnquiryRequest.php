@@ -28,6 +28,7 @@ class StoreEnquiryRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:30'],
             'message' => ['required', 'string', 'max:2000'],
             'source_page' => ['nullable', 'string', 'max:50'],
+            'website' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

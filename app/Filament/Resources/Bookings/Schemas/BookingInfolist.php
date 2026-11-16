@@ -23,10 +23,13 @@ class BookingInfolist
                         TextEntry::make('start_time')
                             ->time('H:i'),
                         TextEntry::make('duration_minutes')
+                            ->label('Duration')
                             ->suffix(' min')
                             ->placeholder('-'),
-                        TextEntry::make('service.name'),
+                        TextEntry::make('service.name')
+                            ->label('Service'),
                         TextEntry::make('dogs.name')
+                            ->label('Dogs')
                             ->badge(),
                         TextEntry::make('miles')
                             ->label('Mileage')

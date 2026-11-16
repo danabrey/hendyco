@@ -64,6 +64,37 @@ class ContactControllerTest extends TestCase
         $this->assertDatabaseHas('enquiries', ['email' => 'jane@example.com']);
     }
 
+    public function test_a_filled_in_honeypot_field_is_thanked_but_not_saved_or_emailed(): void
+    {
+        Mail::fake();
+
+        $response = $this->postJson('/contact', [
+            'name' => 'Spam Bot',
+            'email' => 'bot@example.com',
+            'message' => 'Buy cheap things.',
+            'website' => 'https://spam.example.com',
+        ]);
+
+        $response->assertCreated();
+        $response->assertJson(['message' => "Thanks! We'll be in touch soon."]);
+        $this->assertSame(0, Enquiry::count());
+        Mail::assertNothingSent();
+    }
+
+    public function test_too_many_enquiries_from_one_visitor_are_rate_limited(): void
+    {
+        Mail::fake();
+
+        $payload = ['name' => 'Jane Test', 'email' => 'jane@example.com', 'message' => 'Hello'];
+
+        foreach (range(1, 5) as $attempt) {
+            $this->postJson('/contact', $payload)->assertCreated();
+        }
+
+        $this->postJson('/contact', $payload)->assertTooManyRequests();
+        $this->assertSame(5, Enquiry::count());
+    }
+
     public function test_empty_payload_returns_422_with_required_field_errors(): void
     {
         $response = $this->postJson('/contact', []);
