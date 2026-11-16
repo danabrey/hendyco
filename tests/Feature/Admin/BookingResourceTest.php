@@ -126,6 +126,22 @@ class BookingResourceTest extends TestCase
             });
     }
 
+    public function test_two_dogs_from_one_client_are_charged_the_base_price_when_the_service_has_no_extra_dog_price(): void
+    {
+        $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 0]);
+        $client = Client::factory()->create();
+        $dogs = Dog::factory()->for($client)->count(2)->create();
+
+        Livewire::test(CreateBooking::class)
+            ->fillForm(['service_id' => $walk->id])
+            ->fillForm(['dogs' => $dogs->modelKeys()])
+            ->assertFormSet(function (array $state) use ($client) {
+                $row = collect($state['clientRows'])->sole();
+                $this->assertSame($client->id, $row['client_id']);
+                $this->assertEquals(16.5, $row['price_pence']);
+            });
+    }
+
     public function test_dogs_from_different_clients_are_each_charged_the_base_price(): void
     {
         $walk = Service::factory()->create(['default_price_pence' => 1650, 'extra_dog_price_pence' => 300]);
